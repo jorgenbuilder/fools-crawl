@@ -1,10 +1,12 @@
-import { World } from "miniplex";
+import { With, World } from "miniplex";
 import { lerp } from "three/src/math/MathUtils";
 import { create } from "zustand";
 import { Howl } from "howler";
 
 export const DECK_SIZE = 56;
 export const MAX_HEALTH = 20;
+export const CARD_SIZE = [1, 1.73];
+const SPACING = 0.025;
 
 type Suit = "swords" | "wands" | "pentacles" | "cups";
 
@@ -48,15 +50,17 @@ const cards = world.with("card");
 const withDestination = world.with("destination");
 
 export function dance(time: number) {
+  const { portrait } = useStore.getState();
   let i = 0;
-  for (const { destination } of cards.entities) {
+  for (const { destination, rotation } of cards.entities) {
     // Compute destination and rotation for each card
     const theta = (i / cards.entities.length) * Math.PI * 2 + time * 1;
-    const radius = 3; // adjust to change the radius of the circle
+    const radius = portrait ? 1 : 3; // adjust to change the radius of the circle
 
     destination.x = radius * Math.cos(theta);
     destination.y = radius * Math.sin(theta) * 0.5;
     destination.z = (i % (DECK_SIZE / 26)) * 0.01 + i * 0.015;
+    rotation.z = 0;
 
     i++;
   }
@@ -125,10 +129,7 @@ export function _newGame() {
   world.add({ player: { health: MAX_HEALTH, shield: 0 } });
   setTimeout(() => {
     for (const card of world.with("card").entities) {
-      card.destination.x = 2.8;
-      card.destination.y = 0;
-      card.destination.z = 0;
-      card.rotation.y = Math.PI * 1;
+      arrangeInDeck(card);
     }
   }, 100);
 }
@@ -157,9 +158,7 @@ export function _activateCard(index: number) {
     (c) => c !== index
   );
   discard.entities[0].discard.cards.push(index);
-  cardEntity.destination.x = -2.8;
-  cardEntity.destination.y = 0;
-  cardEntity.destination.z = 0;
+  arrangeInDiscard(cardEntity);
 
   const _player = player.entities[0].player;
 
@@ -208,20 +207,76 @@ function damage() {
   damageSounds[index].play();
 }
 
+function arrangeCardsInGrid(card: With<Entity, "card">, i: number) {
+  const GRID_SIZE = 2; // 2x2 grid
+
+  const positionX =
+    (i % GRID_SIZE) * (CARD_SIZE[0] + SPACING) - (CARD_SIZE[0] + SPACING) / 2;
+  const positionY =
+    Math.floor(i / GRID_SIZE) * (CARD_SIZE[1] + SPACING) -
+    (CARD_SIZE[1] + SPACING) / 2;
+
+  card.destination.x = positionX;
+  card.destination.y = positionY;
+  card.destination.z = 0;
+  card.rotation.y = 0;
+  card.rotation.z = 0;
+}
+
+function arrangeCardsInRow(card: With<Entity, "card">, i: number) {
+  const positionX =
+    -(3 * CARD_SIZE[0] + 3 * SPACING) / 2 + i * (SPACING + CARD_SIZE[0]);
+  card.destination.x = positionX;
+  card.destination.y = 0;
+  card.destination.z = 0;
+  card.rotation.y = 0;
+  card.rotation.z = 0;
+}
+
+function arrangeInDeck(card: With<Entity, "card">) {
+  const { portrait } = useStore.getState();
+  if (portrait) {
+    card.destination.x = 0;
+    card.destination.y = CARD_SIZE[1] + CARD_SIZE[0] / 2 + SPACING + 0.5;
+    card.destination.z = 0;
+    card.rotation.z = Math.PI * 0.5;
+  } else {
+    card.destination.x = 2.8;
+    card.destination.y = 0;
+    card.destination.z = 0;
+    card.rotation.z = 0;
+  }
+  card.rotation.y = Math.PI * 1;
+}
+
+function arrangeInDiscard(card: With<Entity, "card">) {
+  const { portrait } = useStore.getState();
+  if (portrait) {
+    card.destination.x = 0;
+    card.destination.y = -(CARD_SIZE[1] + CARD_SIZE[0] / 2 + SPACING + 0.5);
+    card.destination.z = 0;
+    card.rotation.z = Math.PI * 0.5;
+  } else {
+    card.destination.x = -2.8;
+    card.destination.y = 0;
+    card.destination.z = 0;
+    card.rotation.z = 0;
+  }
+}
+
 export function _deal() {
   const cards = deck.entities[0].deck.cards;
   const hand = cards.splice(0, 4);
+  const { portrait } = useStore.getState();
   let i = 0;
   function animate(i: number, card: number) {
     const cardEntity = world
       .with("card")
       .entities.find((c) => c.card.index === card);
     return () => {
+      if (portrait) arrangeCardsInGrid(cardEntity, i);
+      else arrangeCardsInRow(cardEntity, i);
       dealCard.play();
-      cardEntity.destination.x = -1.5 + i * 1.025;
-      cardEntity.destination.y = 0;
-      cardEntity.destination.z = 0;
-      cardEntity.rotation.y = 0;
     };
   }
   for (const card of hand) {
@@ -267,7 +322,11 @@ export const useStore = create<{
   escapedLastRoom: boolean;
   escapeRoom: () => void;
   clearRoom: () => void;
+  portrait: boolean;
+  setPortrait: (portrait: boolean) => void;
 }>((set, get) => ({
+  portrait: false,
+  setPortrait: (portrait) => set({ portrait }),
   escapedLastRoom: false,
   escapeRoom: () => set({ escapedLastRoom: true }),
   clearRoom: () => set({ escapedLastRoom: false }),
@@ -313,14 +372,19 @@ export function _escape() {
     const cardEntity = world
       .with("card")
       .entities.find((c) => c.card.index === card);
-    cardEntity.destination.x = 2.8;
-    cardEntity.destination.y = 0;
-    cardEntity.destination.z = 0;
-    cardEntity.rotation.y = Math.PI * 1;
+    arrangeInDeck(cardEntity);
   }
   room.entities[0].room.cards = [];
 }
 
 export function _roomCompleted() {
   useStore.getState().clearRoom();
+}
+
+if (typeof window !== "undefined") {
+  window.addEventListener("resize", onWindowResize, false);
+  useStore.getState().setPortrait(window.innerWidth / window.innerHeight < 1);
+}
+function onWindowResize() {
+  useStore.getState().setPortrait(window.innerWidth / window.innerHeight < 1);
 }

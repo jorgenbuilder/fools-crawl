@@ -5,7 +5,6 @@ import { useStateMachine } from "../state/machine";
 import Cards from "./cards";
 import Title from "./title";
 import Camera from "./camera";
-import Again from "./again";
 import Loader from "./loader";
 import Lose from "./lose";
 import Win from "./win";
@@ -14,7 +13,7 @@ import Escape from "./escape";
 const Scene = () => {
   const { state } = useStateMachine();
   const [player] = world.with("player").entities;
-  const { lastAttack } = useStore();
+  const { lastAttack, portrait } = useStore();
   return (
     <Suspense fallback={<Loader />}>
       <ambientLight intensity={0.5} />
@@ -23,7 +22,7 @@ const Scene = () => {
       {state.matches("menu") && <Title />}
       {state.matches("game") && (
         <>
-          <Html position={[0, -1.5, 0]} center>
+          <Html position={portrait ? [0, 2, 0] : [0, -1.5, 0]} center>
             <div
               style={{
                 fontFamily: "monospace",
