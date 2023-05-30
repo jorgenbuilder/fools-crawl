@@ -9,7 +9,10 @@ export default function Win() {
 
   return (
     <group position={[0, -0.25, 1]}>
-      <mesh position={[0, 0.25, 0]} scale={portrait ? 0.25 : 0.5}>
+      <mesh
+        position={portrait ? [0, 2, 0] : [0, 0.25, 0]}
+        scale={portrait ? 0.25 : 0.5}
+      >
         <planeGeometry attach="geometry" args={[7, 1]} />
         <meshStandardMaterial attach="material" map={win} transparent={true} />
       </mesh>
