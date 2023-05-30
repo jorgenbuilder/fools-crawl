@@ -3,14 +3,21 @@ import React, { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useTexture } from "@react-three/drei";
 import { GameConstants, GameMachine, TarotDeck } from "../state/game";
-import { Animation, GameSystems, GraphicalEntities } from "../state/graphics";
+import {
+  Animation,
+  GraphicsSystems,
+  GraphicsEntities,
+} from "../state/graphics";
+import { useArbitraryStore } from "../state/zustand";
 
 export default function Cards() {
   // const mesh = useRef<THREE.InstancedMesh>();
   const meshes = useRef<THREE.Group[]>([]);
   const texture = useTexture("/back.png");
   const { state, send } = GameMachine.use();
+  const { portrait } = useArbitraryStore();
   // const cardArt = useTexture(Array(DECK_SIZE).fill(0).map((_, i) => getTarotCard(i)).map((card) => `/deck/${card.suit}-${card.value}.jpg`))
+  // TODO: Get these from the sw
   const cardArt = useTexture(
     Array(GameConstants.DECK_SIZE)
       .fill(0)
@@ -25,13 +32,17 @@ export default function Cards() {
     // const dummy = new THREE.Object3D();
 
     if (state.matches("Menu") || state.matches("GamePlay.Win")) {
-      Animation.DancingCards(elapsedTime);
+      Animation.DancingCards(elapsedTime, GraphicsEntities.WithCard, portrait);
     } else if (state.matches("GamePlay.GameOver")) {
-      Animation.DyingCards();
+      Animation.DyingCards(GraphicsEntities.WithCard);
     }
-    GameSystems.DestinationSystem(elapsedTime);
 
-    GraphicalEntities.WithCard.entities.forEach((card, i) => {
+    GraphicsSystems.DestinationSystem(
+      elapsedTime,
+      GraphicsEntities.WithDestination
+    );
+
+    GraphicsEntities.WithCard.entities.forEach((card, i) => {
       // Set the position and rotation of the dummy object based on the card's state
       // dummy.position.set(card.position.x, card.position.y, card.position.z);
       // dummy.rotation.set(card.rotation.x, card.rotation.y, card.rotation.z);
@@ -57,13 +68,14 @@ export default function Cards() {
 
   return (
     <>
-      {GraphicalEntities.WithCard.entities.map((card, i) => (
+      {GraphicsEntities.WithCard.entities.map((card, i) => (
         <group
           key={`card-${card.card.index}`}
           ref={(el) => (meshes.current[i] = el)}
           onClick={() => send("FOLD_CARD", { index: i })}
         >
           <mesh>
+            {/* TODO: use more geometry when the card is animating */}
             <planeGeometry attach="geometry" args={[1, 1.73]} />
             <meshStandardMaterial
               attach="material"

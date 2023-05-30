@@ -12,7 +12,9 @@ function Game() {
       <Head>
         <title>Fools Crawl</title>
         <meta name="description" content="Donsol inspired game" />
+        <link rel="manifest" href="/manifest.json" />
         <link rel="icon" href="/favicon.ico" />
+        <meta name="theme-color" content="#000000" />
       </Head>
       <div className={styles.container}>
         <Canvas>

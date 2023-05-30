@@ -34,7 +34,7 @@ export namespace Audio {
   }
 
   /** Play a sound. */
-  export function playSound(name: Sounds) {
+  export function PlaySound(name: Sounds) {
     const buffer = SoundBuffers.get(name);
     if (buffer instanceof Howl) {
       buffer.play();

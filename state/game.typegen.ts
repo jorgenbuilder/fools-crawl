@@ -29,6 +29,9 @@ export interface Typegen0 {
       data: unknown;
       __tip: "See the XState TS docs to learn how to strongly type this.";
     };
+    "xstate.after(0)#game.GamePlay.PlayerTurnStart": {
+      type: "xstate.after(0)#game.GamePlay.PlayerTurnStart";
+    };
     "xstate.init": { type: "xstate.init" };
   };
   invokeSrcNameMap: {
@@ -51,6 +54,7 @@ export interface Typegen0 {
       | "done.invoke.game.GamePlay.Escape:invocation[0]"
       | "done.invoke.game.GamePlay.FoldCard:invocation[0]"
       | "done.invoke.game.GamePlay.Start:invocation[0]";
+    gameOverHook: "";
   };
   eventsCausingDelays: {};
   eventsCausingGuards: {
@@ -78,6 +82,7 @@ export interface Typegen0 {
     | "GamePlay.FoldCard"
     | "GamePlay.GameOver"
     | "GamePlay.PlayerTurn"
+    | "GamePlay.PlayerTurnStart"
     | "GamePlay.Start"
     | "GamePlay.Win"
     | "Menu"
@@ -90,6 +95,7 @@ export interface Typegen0 {
           | "FoldCard"
           | "GameOver"
           | "PlayerTurn"
+          | "PlayerTurnStart"
           | "Start"
           | "Win";
       };
