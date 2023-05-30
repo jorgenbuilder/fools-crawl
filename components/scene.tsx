@@ -1,7 +1,6 @@
 import React, { Suspense } from "react";
 import { Html } from "@react-three/drei";
-import { useStore, world } from "../state/store";
-import { useStateMachine } from "../state/machine";
+import { GameMachine } from "../state/game";
 import Cards from "./cards";
 import Title from "./title";
 import Camera from "./camera";
@@ -9,20 +8,25 @@ import Loader from "./loader";
 import Lose from "./lose";
 import Win from "./win";
 import Escape from "./escape";
+import { useArbitraryStore } from "../state/zustand";
 
 const Scene = () => {
-  const { state } = useStateMachine();
-  const [player] = world.with("player").entities;
-  const { lastAttack, portrait } = useStore();
+  const {
+    state: {
+      context: { health, shield, lastMonsterBlocked },
+      matches,
+    },
+  } = GameMachine.use();
+  const { portrait } = useArbitraryStore();
   return (
     <Suspense fallback={<Loader />}>
       <ambientLight intensity={0.5} />
-      {state.matches("game.win") && <Win />}
-      {state.matches("game.lose") && <Lose />}
-      {state.matches("menu") && <Title />}
-      {state.matches("game") && (
+      {matches("GamePlay.Win") && <Win />}
+      {matches("GamePlay.GameOver") && <Lose />}
+      {matches("Menu") && <Title />}
+      {matches("GamePlay") && (
         <>
-          {!state.matches("game.win") && (
+          {!matches("GamePlay.Win") && (
             <Html position={portrait ? [0, 2, 0] : [0, -1.5, 0]} center>
               <div
                 style={{
@@ -32,12 +36,15 @@ const Scene = () => {
                   textShadow: "0 0 10px black",
                 }}
               >
-                ❤️&nbsp;{player?.player.health}&nbsp;🛡️&nbsp;
-                {player?.player.shield}({lastAttack})
+                ❤️&nbsp;{health}&nbsp;🛡️&nbsp;
+                {shield}
+                {shield > 0 && lastMonsterBlocked && (
+                  <>({lastMonsterBlocked})</>
+                )}
               </div>
             </Html>
           )}
-          {![state.matches("game.win"), state.matches("game.lose")].includes(
+          {![matches("GamePlay.Win"), matches("GamePlay.GameOver")].includes(
             true
           ) && <Escape />}
         </>

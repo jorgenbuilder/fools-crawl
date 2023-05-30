@@ -1,13 +1,13 @@
 import React from "react";
 import { useTexture } from "@react-three/drei";
-import { useStateMachine } from "../state/machine";
-import { useStore } from "../state/store";
+import { GameMachine } from "../state/game";
+import { useArbitraryStore } from "../state/zustand";
 
 export default function Title() {
   const title = useTexture("/title.png");
   const start = useTexture("/start.png");
-  const { send } = useStateMachine();
-  const { portrait } = useStore();
+  const { send } = GameMachine.use();
+  const { portrait } = useArbitraryStore();
 
   return (
     <group position={[0, 0, 1]}>

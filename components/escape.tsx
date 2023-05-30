@@ -1,12 +1,12 @@
 import React from "react";
 import { useTexture } from "@react-three/drei";
-import { useStateMachine } from "../state/machine";
-import { useStore } from "../state/store";
+import { GameMachine } from "../state/game";
+import { useArbitraryStore } from "../state/zustand";
 
 export default function Escape() {
   const escape = useTexture("/escape.png");
-  const { send } = useStateMachine();
-  const { portrait } = useStore();
+  const { send } = GameMachine.use();
+  const { portrait } = useArbitraryStore();
 
   return (
     <group position={portrait ? [0, -2.25, 0] : [0, -1.125, 1]}>

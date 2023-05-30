@@ -1,11 +1,11 @@
 import React from "react";
 import { useTexture } from "@react-three/drei";
 import Again from "./again";
-import { useStore } from "../state/store";
+import { useArbitraryStore } from "../state/zustand";
 
 export default function Lose() {
   const lose = useTexture("/lose.png");
-  const { portrait } = useStore();
+  const { portrait } = useArbitraryStore();
 
   return (
     <group position={[0, -0.25, 1]}>

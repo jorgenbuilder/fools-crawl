@@ -1,12 +1,12 @@
 import React from "react";
 import { useTexture } from "@react-three/drei";
-import { useStateMachine } from "../state/machine";
-import { useStore } from "../state/store";
+import { GameMachine } from "../state/game";
+import { useArbitraryStore } from "../state/zustand";
 
 export default function Again() {
   const start = useTexture("/again.png");
-  const { send } = useStateMachine();
-  const { portrait } = useStore();
+  const { send } = GameMachine.use();
+  const { portrait } = useArbitraryStore();
 
   return (
     <group position={portrait ? [0, -1.25, 1] : [0, -0.25, 1]}>
