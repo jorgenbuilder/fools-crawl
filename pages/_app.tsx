@@ -1,10 +1,7 @@
 import "../styles/globals.css";
 
-if (typeof window !== "undefined" && "serviceWorker" in navigator) {
-  window.addEventListener("load", function () {
-    navigator.serviceWorker.register("/service-worker.js");
-  });
-}
+export const PreloadWorker =
+  typeof window === "undefined" ? null : new Worker("preload-worker.js");
 
 function MyApp({ Component, pageProps }) {
   return <Component {...pageProps} />;

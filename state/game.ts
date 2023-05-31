@@ -21,12 +21,12 @@
 
 import { createMachine, assign } from "xstate";
 import { create } from "zustand";
+import { devtools } from "zustand/middleware";
 import xstate from "zustand-middleware-xstate";
 import type { Store } from "zustand-middleware-xstate";
 import { Animation, CardLayouts, GraphicsEntities } from "./graphics";
 import { useArbitraryStore } from "./zustand";
 import { Audio } from "./audio";
-import Game from "../pages";
 
 export namespace GameConstants {
   /** Number of cards in the deck. */
@@ -257,13 +257,13 @@ export namespace GameLogic {
 export namespace GameMachine {
   // Player actions
   type ActionNewGame = { type: "NEW_GAME" };
-  type ActionFoldCard = { type: "FOLD_CARD"; index: number };
+  export type ActionFoldCard = { type: "FOLD_CARD"; index: number };
   type ActionEscape = { type: "ESCAPE" };
   type Action = ActionNewGame | ActionFoldCard | ActionEscape;
 
   export const Machine = createMachine(
     {
-      /** @xstate-layout N4IgpgJg5mDOIC5RQIYFswDoCyYB2ArgMQByAogOoD6A4gILZkDaADALqKgAOA9rAJYAXfjzycQAD0QAmAJyYAjAFYWANgAc01dIDsAFiWzVAZgA0IAJ6IFLaZmO3j05Xp0290gL6fzqDJhp0MAAFABsUC0wAZUEUACdBIghRLH48ADceAGssPyxAjDCI6NiEhDTMgGMUYVFWNnrxXgFasSRJRAc9TCUFdT1ZBWNZHVUdFh1zKwRjVVVMEdclJXVjJWM+9W9fIICgosiAETAUUKSUzArs3N2CkPCjk9DyjJ5q1vrG9uahETbQKQIVSyOwsJwKaQsdY6Yx6dSyKadMaYKHqGwrIw6dQsWR6bYgPJ7QoPTAHMBxAAqBDieCIADEAPIAGUOVAAwnQAEqHL7cPi-UTiQGLTDA5aQ9YsdT6MyWRB6PQKUWyVZaTGGAx4nwE277ElkynU2lkKIc4LMdhNfmtIXWKEsTAeWbGYww3TqDSImbwx0KXHSliuUZ+-GEu4HTB0nihCBs+IQc54VKvHKYMN64pRmNxuIQF5VGp-T6W77Wv62hAQlgOjQ6EGjYGaPRe1Q2TBaPTOnF6NSqUO64nFMiwapcMCJ5OZVPpweRYejsD5t6FursXkgH429qAj3zJRuORw6TSPTaL0dnqLY846SaHRebUz+5DvAQKk0ojrzfl7fWBR1hYYTRFgIWvZs5QQbElShWZxiGLERlkft-HDEkyFfd9aSYBQOFLFofwBRBZGMdR22A-pTyUY8dEmCCoJRdYxhA114TrZD8gzOcMKNT9pFwvl8MFX8EBBeRbzUKVeiUAYW2lTBNHhEDZCMYExnYolny4t8eKYYx+I3MshMIyCPUUVt9DGD1pC9JRW0wGVVDBEFelGYx1NQ4o2VCE44k5HgeDQCdLhTG4UM4zAvJ8vyAqXd4izXEsBIFf4OgQAYlB6V1VE7eEFEshEIPWUiQPGDY1EhNY+0fAdNMwCg0lIShaAYC19O-IzUpseQ8rhf9hmynQVGsuiNh6CZsqcYYcWUdzwruBl0nJRrqHoRgv0MlLAS6szephIwllsL1Rm6W9FgVBQFQcNz8TwHgIDgcQ8itQTNsQABaPp5IGDYYXvaSwVo6Y3t6R1HMGAwIWUW8dHU3BCGe5KK3WBZxIulUVEGYZwOmWYUSm6UTw9AwlFm2cEa3YzceBZwTBBJiXC9f8dBRRYLtPWFXRh6qwtnEp4kEcmCNS-plRp4YtDg6SvVmbpZF6JwPEGj0LpJ7mON545TkFjrARUDLdEMIZ0rB9ZpeyhZ5ZPA3lYMUnaoNTDtdekTq0UWziJ7BVZAB6X1FIiGnGxXQJldO2IyzWN4ydisFD9eZBmOtwRg2NYvQGeZW2h2ZbDgrY1Y0iN5xQMdo+EoZRs7FYcRz5TAaRWXLcVlZW1t-OPK0x28MRsvpBdexj2U09g17I7e-s1tpJolVlP6MOSUi+JorQUvjLhDL9AmTRdAVe9ZWmMZujytx70H4ipTn4p6pS9rnYhDx7OlZYHBBCFRi9D1SOIv1TyMKVY61HYPNarzUWnEFeqUxjGHsODFYfpbDVgKtMOspE3A4jrB4LQawFDeG8EAA */
+      /** @xstate-layout N4IgpgJg5mDOIC5RQIYFswDoCyYB2ArgMQByAogOoD6A4gILZkDaADALqKgAOA9rAJYAXfjzycQAD0QAmAJyYAjAFYWANgAc01dIDsAFiWzVAZgA0IAJ6IFLaZmO3j05Xp0290gL6fzqDJhp0MAAFABsUC0wAZUEUACdBIghRLH48ADceAGssPyxAjDCI6NiEhDTMgGMUYVFWNnrxXgFasSRJRAc9TCUFdT1ZBWNZHVUdFh1zKwRjVVVMEdclJXVjJWM+9W9fIICgosiAETAUUKSUzArs3N2CkPCjk9DyjJ5q1vrG9uahETbQKQIVSyOwsJwKaQsdY6Yx6dSyKadMaYKHqGwrIw6dQsWR6bYgPJ7QoPTAHMBxAAqBDieBi8USElgsUEWBQADMWXEABQsACUREJdwOpIe5KpNLpCS+3D4v1E4kBaLsxnUqkMzhx0MmlkQem0mF0OlkTmMOhUxg2+MF+xJZMp1LwRAAYgB5AAyhyoAGE6AAlQ7SkA-VoKxCLTDA5aQ9YsdT6Mw6hB6PQKCOyVZaTGGAx4nwE2424p28WOshRH3BZjsJqykPtQHoliYDyzC0w3Sq9SImbw5sKXFxliuUb9q0F4nFJ08UIQL3xCDnPCpV45TDWieRKczudxCAvKo1P6favfWt-UMICEsJsaI26Obp6R6buqGwG1R6Vs4vRqVRj-xCiSZCwNUXBgIuy6ZKu673MUwGgWA+5vIedTsIGwbnvWiCqvMShuHIcLSE+2jdlo3SGPoRE4tImg6F4eYwcKZB4BAJZEOhZ7ylhl4KEaCwwmiLAQlRz6JtiqZQrM4xDFiIyyP++SFpEzGsQ67EKBwp4tJhAJhiqBqCf0epKEROjatM4kousYxCaa8JGgpRKwcpLFsUw0iaTK2lcbpCAgvINFqLGvRKAML5xpgmjwkJshGMCYyOYBcGuWpTDGJ5Qacf8HQIOoqqKK++hjKq0jdkor6YPGqhgiCvSjMYiVKZgXqhCccS+jwPBoBBlwrjcAFNS1bUdV1SHvEeaEnl5crZYCAxKD0pofiqgzFQiibrOoKK8WCNjaGC5WNRumAUGkpCULQDBVhlGE+TlNjyAoH5ojCRhLLY3arKmKijJ+0jDDiyhHc5Tkuuk5LndQ9CMBx3mzdYOIFXCvHDB+ZofYmv0GYsyYKMmDgNfieA8BAcDiHkNZwxeAC0fSRQMGwwnRoVguZiDUyoEYbFRRgbIs9E7P4uCEJTM0XimEZ9BC1nxteRjdrMkWhQYmjJkJ165oLikbqLda+YrwLOCYII2S43a8ToigKLx-bLRs2iE1rTnCpKgi6zpOX9GmRvDFo0mhQrH4LL0TgeGaqp40owPCscpzu3dgIqAtuiGEM83VbI6yB90mdDE+KcRwY0e2qK9oSqUbtaWL3HxQs3N9HCvtGmVkIorFvE2f0WJ-gx44g8WDrx-DfnXoo5XGj+yayKzCt5c2IeBboEymsXk7TrO85Dxe1tGAsHeuP2MJDEo3YDPMr40TC1VL30q-KSBKBgVv3FDBszZrNi0+6LFbMzEHuehwLq+IuvcBrHRUiWZ+vkIQWnsERWKeoRy-m7HRYwlVXyhTMumWK-Q77NVavEEaaAoE5ThAtfQExNC6GTKgl8+gCpuDogg40sY8GnWyrdYeEIPCVTjMsBwIIISjE+hoOu-Y9RGFjNbTW+YwEgzuGDckJDARjDQcMSOaIv5yxQemSqD0jQeC0GsBQ3hvBAA */
       id: "game",
       predictableActionArguments: true,
       schema: {
@@ -370,7 +370,7 @@ export namespace GameMachine {
     }
   );
 
-  export const use = create<Store<typeof Machine>>()(xstate(Machine));
+  export const use = create<Store<typeof Machine>>()(devtools(xstate(Machine)));
 }
 
 /**
@@ -380,8 +380,7 @@ namespace GameEffects {
   // TODO: Add a nice preloader
   // TODO: Move camera out when game ends (6)
   // TODO: Maybe I should make the game state emit events?
-  // TODO: Handle all sounds using a generic effect queue?
-  // TODO: Play the deal card sound when dealing a card.
+  // TODO: xstate loses state whenever you refresh the page.
   /** These hooks allow us to push updates to the graphics ECS based on events in the game state. */
   export namespace Hooks {
     export function FightMonster(state: GameLogic.GameState, value: number) {
@@ -436,6 +435,21 @@ namespace GameEffects {
   function SubscribeToGameState() {
     GameMachine.use.subscribe(({ state }) => {
       const { portrait } = useArbitraryStore.getState();
+      console.info(`Game state: ${state.toStrings()}`);
+
+      // Stack cards in the deck when the game starts.
+      if (state.matches("GamePlay.Start")) {
+        for (const card of GraphicsEntities.WithCard.entities) {
+          setTimeout(() => {
+            // Timer because dancing card animation in card component hijacks this
+            CardLayouts.InDeck(
+              card,
+              state.context.deck.indexOf(card.card.index),
+              portrait
+            );
+          }, 10);
+        }
+      }
 
       // Deal cards at the start of the turn.
       if (state.matches("GamePlay.PlayerTurnStart")) {
@@ -453,30 +467,29 @@ namespace GameEffects {
         }
       }
 
-      if (state.matches("GamePlay")) {
-        const { deck, discard, room } = state.context as GameLogic.GameState;
-        GraphicsEntities.WithCard.entities.forEach((card) => {
-          if (deck.includes(card.card.index)) {
-            CardLayouts.InDeck(card, deck.indexOf(card.card.index), portrait);
-          } else if (discard.includes(card.card.index)) {
-            CardLayouts.InDiscard(
-              card,
-              discard.indexOf(card.card.index),
+      // Discard cards when the player folds.
+      if (state.matches("GamePlay.FoldCard")) {
+        const card = (state.event as GameMachine.ActionFoldCard).index;
+        const i = state.context.discard.indexOf(card);
+        const gameObj = GraphicsEntities.WithCard.entities[card];
+        setTimeout(() => {
+          CardLayouts.InDiscard(gameObj, i, portrait);
+        }, 50 * (i + 1));
+      }
+
+      // Move room cards back to the deck when the player escapes.
+      if (state.matches("GamePlay.Escape")) {
+        for (const card of state.context.room.filter((x) => x !== undefined)) {
+          const i = state.context.room.indexOf(card);
+          const gameObj = GraphicsEntities.WithCard.entities[card];
+          setTimeout(() => {
+            CardLayouts.InDeck(
+              gameObj,
+              state.context.deck.indexOf(gameObj.card.index),
               portrait
             );
-          }
-          // else if (room.includes(card.card.index)) {
-          //   if (portrait) {
-          //     CardLayouts.RoomGrid(card, room.indexOf(card.card.index));
-          //   } else {
-          //     CardLayouts.RoomRow(card, room.indexOf(card.card.index));
-          //   }
-          // }
-          else {
-            console.error(`Card ${card.card.index} not found in game state.`);
-            // CardLayouts.InDeck(card, 0, portrait);
-          }
-        });
+          }, 150 * (i + 1));
+        }
       }
     });
   }

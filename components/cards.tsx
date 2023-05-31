@@ -1,6 +1,6 @@
 import * as THREE from "three";
-import React, { useRef } from "react";
-import { useFrame } from "@react-three/fiber";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useFrame, useLoader } from "@react-three/fiber";
 import { useTexture } from "@react-three/drei";
 import { GameConstants, GameMachine, TarotDeck } from "../state/game";
 import {
@@ -9,6 +9,10 @@ import {
   GraphicsEntities,
 } from "../state/graphics";
 import { useArbitraryStore } from "../state/zustand";
+import { PreloadWorker } from "../pages/_app";
+
+// Commented out code around this file is for turning this into instanced mesh, but it's drifting further apart.
+// Also, no need, it's fast already. Might be needed when I add more triangles for bendy cards?
 
 export default function Cards() {
   // const mesh = useRef<THREE.InstancedMesh>();
@@ -17,13 +21,18 @@ export default function Cards() {
   const { state, send } = GameMachine.use();
   const { portrait } = useArbitraryStore();
   // const cardArt = useTexture(Array(DECK_SIZE).fill(0).map((_, i) => getTarotCard(i)).map((card) => `/deck/${card.suit}-${card.value}.jpg`))
-  // TODO: Get these from the sw
   const cardArt = useTexture(
     Array(GameConstants.DECK_SIZE)
       .fill(0)
       .map((_, i) => TarotDeck.getTarotCard(i))
       .map((card) => `/deck-2/${card.suit[0].toUpperCase()}${card.value}.png`)
   );
+
+  // Retrieve image data from worker (doesn't work)
+  // useEffect(() => {
+  //   PreloadWorker.onmessage = ({ data }) => console.log(data);
+  //   PreloadWorker.postMessage({});
+  // }, []);
 
   useFrame(({ clock: { elapsedTime } }) => {
     // const ref = mesh.current;

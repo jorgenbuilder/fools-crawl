@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import gsap from "gsap";
 import { ArchetypeBucket, World as ECS } from "miniplex";
 import { TarotDeck } from "./game"; // Meant to be unidirectional. Careful!
 
@@ -44,6 +45,7 @@ export namespace GraphicsEntities {
 
   /** A default vector of zero values. */
   export const DefaultVec3 = new THREE.Vector3(0, 0, 0);
+  export const DefaultEuler = new THREE.Euler(0, 0, 0);
 
   export const WithCard = World.with<Card>("card");
   export const WithDestination = World.with<
@@ -81,8 +83,7 @@ export namespace CardLayouts {
   /** Arrange room cards in a grid for portrait orientation. */
   export function RoomGrid(card: GraphicsEntities.Card, i: number) {
     const GRID_SIZE = 2; // 2x2 grid
-
-    card.destination.position = GraphicsEntities.DefaultVec3.clone().set(
+    const position = GraphicsEntities.DefaultVec3.clone().set(
       (i % GRID_SIZE) *
         (GraphicsConstants.CARD_SIZE[0] + GraphicsConstants.SPACING) -
         (GraphicsConstants.CARD_SIZE[0] + GraphicsConstants.SPACING) / 2,
@@ -91,27 +92,29 @@ export namespace CardLayouts {
         (GraphicsConstants.CARD_SIZE[1] + GraphicsConstants.SPACING) / 2,
       0
     );
-    card.destination.rotation = GraphicsEntities.DefaultVec3.clone().set(
+    const rotation = GraphicsEntities.DefaultVec3.clone().set(
       card.rotation.x,
       0,
       0
     );
+    return { position, rotation };
   }
 
   /** Arrange room cards in a row for landscape orientation. */
   export function RoomRow(card: GraphicsEntities.Card, i: number) {
-    card.destination.position = GraphicsEntities.DefaultVec3.clone().set(
+    const position = GraphicsEntities.DefaultVec3.clone().set(
       -(3 * GraphicsConstants.CARD_SIZE[0] + 3 * GraphicsConstants.SPACING) /
         2 +
         i * (GraphicsConstants.SPACING + GraphicsConstants.CARD_SIZE[0]),
       0,
       0
     );
-    card.destination.rotation = GraphicsEntities.DefaultVec3.clone().set(
+    const rotation = GraphicsEntities.DefaultVec3.clone().set(
       card.rotation.x,
       0,
       0
     );
+    return { position, rotation };
   }
 
   /** Arrange cards in the deck. */
@@ -120,32 +123,28 @@ export namespace CardLayouts {
     i: number,
     portrait: boolean
   ) {
-    if (portrait) {
-      card.destination.position = GraphicsEntities.DefaultVec3.clone().set(
-        0,
-        GraphicsConstants.CARD_SIZE[1] +
-          GraphicsConstants.CARD_SIZE[0] / 2 +
-          GraphicsConstants.SPACING +
-          0.5,
-        -i * 0.01
-      );
-      card.destination.rotation = GraphicsEntities.DefaultVec3.clone().set(
-        card.rotation.x,
-        Math.PI, // face down
-        Math.PI * 0.5 // turn sideways
-      );
-    } else {
-      card.destination.position = GraphicsEntities.DefaultVec3.clone().set(
-        2.8,
-        0,
-        -i * 0.01
-      );
-      card.destination.rotation = GraphicsEntities.DefaultVec3.clone().set(
-        card.rotation.x,
-        Math.PI, // face down
-        0
-      );
-    }
+    const position = portrait
+      ? GraphicsEntities.DefaultVec3.clone().set(
+          0,
+          GraphicsConstants.CARD_SIZE[1] +
+            GraphicsConstants.CARD_SIZE[0] / 2 +
+            GraphicsConstants.SPACING +
+            0.5,
+          -i * 0.01
+        )
+      : GraphicsEntities.DefaultVec3.clone().set(2.8, 0, -i * 0.01);
+    const rotation = portrait
+      ? GraphicsEntities.DefaultVec3.clone().set(
+          card.rotation.x,
+          Math.PI, // face down
+          Math.PI * 0.5 // turn sideways
+        )
+      : GraphicsEntities.DefaultVec3.clone().set(
+          card.rotation.x,
+          Math.PI, // face down
+          0
+        );
+    return { position, rotation };
   }
 
   /** Arrange cards in the discard pile. */
@@ -154,34 +153,31 @@ export namespace CardLayouts {
     i: number,
     portrait: boolean
   ) {
-    if (portrait) {
-      card.destination.position = GraphicsEntities.DefaultVec3.clone().set(
-        0,
-        -(
-          GraphicsConstants.CARD_SIZE[1] +
-          GraphicsConstants.CARD_SIZE[0] / 2 +
-          GraphicsConstants.SPACING +
-          0.5
-        ),
-        -i * 0.01
-      );
-      card.destination.rotation = GraphicsEntities.DefaultVec3.clone().set(
-        card.rotation.x,
-        card.rotation.y,
-        Math.PI * 0.5 // turn sideways
-      );
-    } else {
-      card.destination.position = GraphicsEntities.DefaultVec3.clone().set(
-        -2.8,
-        0,
-        -i * 0.01
-      );
-      card.destination.rotation = GraphicsEntities.DefaultVec3.clone().set(
-        card.rotation.x,
-        card.rotation.y,
-        0
-      );
-    }
+    return {
+      position: portrait
+        ? GraphicsEntities.DefaultVec3.clone().set(
+            0,
+            -(
+              GraphicsConstants.CARD_SIZE[1] +
+              GraphicsConstants.CARD_SIZE[0] / 2 +
+              GraphicsConstants.SPACING +
+              0.5
+            ),
+            -i * 0.01
+          )
+        : GraphicsEntities.DefaultVec3.clone().set(-2.8, 0, -i * 0.01),
+      rotation: portrait
+        ? GraphicsEntities.DefaultEuler.clone().set(
+            card.rotation.x,
+            card.rotation.y,
+            Math.PI * 0.5 // turn sideways
+          )
+        : GraphicsEntities.DefaultVec3.clone().set(
+            card.rotation.x,
+            card.rotation.y,
+            0
+          ),
+    };
   }
 
   /** A default position for a card. */
@@ -275,13 +271,9 @@ export namespace Animation {
         const currentIntensity =
           shakeIntensity * (1 - intensityDecayFactor * i);
         const vec = randomVec3(currentIntensity);
-        // camera.destination.position.add(vec);
         camera.destination.position.x = vec.x * currentIntensity;
         camera.destination.rotation.z =
           vec.x * Math.PI * currentIntensity * 0.25;
-        // camera.destination.rotation.add(randomVec3(currentIntensity));
-        // camera.destination.rotation.x = camera.rotation.x;
-        // camera.destination.rotation.y = camera.rotation.y;
       }, interval * i);
     }
 
