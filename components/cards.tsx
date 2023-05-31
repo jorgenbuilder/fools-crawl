@@ -124,3 +124,36 @@ export default function Cards() {
 //         <meshStandardMaterial attach="material" map={cardArt} side={THREE.FrontSide} />
 //     </mesh>
 // }
+
+export function Card({
+  card,
+  fRef,
+}: {
+  card: GraphicsEntities.Card;
+  fRef: React.MutableRefObject<THREE.Group>;
+}) {
+  const back = useTexture("/back.png");
+  const front = useTexture(
+    `/deck-2/${card.card.suit[0].toUpperCase()}${card.card.value}.png`
+  );
+  return (
+    <group ref={fRef}>
+      <mesh>
+        <planeGeometry attach="geometry" args={[1, 1.73]} />
+        <meshStandardMaterial
+          attach="material"
+          map={back}
+          side={THREE.BackSide}
+        />
+      </mesh>
+      <mesh>
+        <planeGeometry attach="geometry" args={[1, 1.73]} />
+        <meshStandardMaterial
+          attach="material"
+          map={front}
+          side={THREE.FrontSide}
+        />
+      </mesh>
+    </group>
+  );
+}

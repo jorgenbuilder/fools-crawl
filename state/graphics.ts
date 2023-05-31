@@ -1,7 +1,11 @@
 import * as THREE from "three";
 import gsap from "gsap";
+import { CustomEase } from "gsap/dist/CustomEase";
 import { ArchetypeBucket, World as ECS } from "miniplex";
+import { Audio } from "./audio";
 import { TarotDeck } from "./game"; // Meant to be unidirectional. Careful!
+
+gsap.registerPlugin(CustomEase);
 
 export namespace GraphicsConstants {
   /** Dimensions of the cards. */
@@ -345,6 +349,113 @@ export namespace Animation {
       );
   }
 
+  export function MonsterCardAttack(
+    card: GraphicsEntities.Card,
+    positionInDiscard: number,
+    portrait: boolean
+  ) {
+    const timeline = gsap.timeline();
+    return timeline
+      .to(card.position, {
+        x: 0,
+        y: 0,
+        z: 2,
+        duration: 0.33,
+        ease: "power2.out",
+      })
+      .add("attack")
+      .to(
+        card.position,
+        {
+          y: -0.5,
+          ease: CustomEase.create(
+            "custom",
+            "M0,0 C0,-0.668 0.634,-0.652 0.634,-0.652 0.634,-0.652 1,1 1,1"
+          ),
+          duration: 0.5,
+        },
+        "attack"
+      )
+      .to(
+        card.rotation,
+        {
+          z: "random(-1, 1)",
+          ease: CustomEase.create(
+            "custom",
+            "M0,0 C0,-0.668 0.634,-0.652 0.634,-0.652 0.634,-0.652 1,1 1,1"
+          ),
+        },
+        "attack"
+      )
+      .call(() => {
+        Animation.CameraShake(
+          GraphicsEntities.WithCamera,
+          Math.max(card.card.value, 0) / 10
+        );
+        Audio.PlaySound("damage");
+      })
+      .add("reset")
+      .to(
+        card.position,
+        {
+          x: 0,
+          y: 0,
+          z: 2,
+          duration: 0.75,
+        },
+        "reset"
+      )
+      .to(
+        card.rotation,
+        {
+          z: 0,
+          duration: 0.5,
+        },
+        "reset"
+      )
+      .add(() => Discard(card, positionInDiscard, portrait));
+  }
+
+  export function Discard(
+    card: GraphicsEntities.Card,
+    positionInDiscard: number,
+    portrait: boolean
+  ) {
+    const timeline = gsap.timeline({
+      ease: "power1",
+    });
+    const discard = CardLayouts.InDiscard(card, positionInDiscard, portrait);
+    return timeline
+      .add("discard")
+      .to(
+        card.position,
+        {
+          x: discard.position.x,
+          y: discard.position.y,
+          duration: 0.5,
+        },
+        "discard"
+      )
+      .to(
+        card.position,
+        {
+          z: discard.position.z,
+          duration: 0.25,
+        },
+        "discard"
+      )
+      .to(
+        card.rotation,
+        {
+          x: discard.rotation.x,
+          y: discard.rotation.y,
+          z: discard.rotation.z,
+          duration: 0.5,
+        },
+        "discard"
+      );
+  }
+
   /** Makes all of the cards in the deck dance. */
   export function DancingCards(
     /** Elapsed time. */
@@ -402,23 +513,18 @@ export namespace Animation {
     const camera = bucket.entities[0];
     if (!camera) return;
 
-    const interval = shakeDuration / shakeCount;
-    const intensityDecayFactor = 1 / shakeCount;
+    const start = camera.position.clone();
 
-    for (let i = 0; i < shakeCount; i++) {
-      setTimeout(() => {
-        const currentIntensity =
-          shakeIntensity * (1 - intensityDecayFactor * i);
-        const vec = randomVec3(currentIntensity);
-        camera.position.x = vec.x * currentIntensity;
-        camera.rotation.z = vec.x * Math.PI * currentIntensity * 0.25;
-      }, interval * i);
-    }
-
-    // Reset camera position after shaking
-    setTimeout(() => {
-      camera.position.set(0, 0, camera.position.z);
-      camera.rotation.set(0, 0, 0);
-    }, shakeDuration);
+    gsap.killTweensOf(camera.position);
+    gsap
+      .timeline()
+      .to(camera.position, {
+        y: start.y + 0.1,
+        duration: 0.125,
+      })
+      .to(camera.position, {
+        y: start.y,
+        duration: 0.25,
+      });
   }
 }

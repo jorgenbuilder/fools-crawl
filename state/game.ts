@@ -376,7 +376,7 @@ export namespace GameMachine {
 /**
  * Namespace responsible for pushing unidirectional updates from the game machine to the ECS (graphics renderer) and audio renderer.
  */
-namespace GameEffects {
+export namespace GameEffects {
   // TODO: Add a nice preloader
   // TODO: Move camera out when game ends (6)
   // TODO: Maybe I should make the game state emit events?
@@ -385,14 +385,6 @@ namespace GameEffects {
   export namespace Hooks {
     export function FightMonster(state: GameLogic.GameState, value: number) {
       // Would be nice if I didn't have to introspect the state here, and if it just published a nice event.
-      Animation.CameraShake(
-        GraphicsEntities.WithCamera,
-        Math.max(
-          value - (value <= state.lastMonsterBlocked ? state.shield : 0),
-          0
-        ) / 10
-      );
-      Audio.PlaySound("damage");
     }
 
     export function DrinkPotion(state: GameLogic.GameState, value: number) {
@@ -424,7 +416,7 @@ namespace GameEffects {
   }
 
   /** Adds a camera to the game world. */
-  function addCamera() {
+  export function addCamera() {
     GraphicsEntities.World.add({
       camera: null,
       ...CardLayouts.DefaultCamera(),
@@ -480,11 +472,19 @@ namespace GameEffects {
       if (state.matches("GamePlay.FoldCard")) {
         const card = (state.event as GameMachine.ActionFoldCard).index;
         const gameObj = GraphicsEntities.WithCard.entities[card];
-        Animation.SendToDiscard(
-          gameObj,
-          state.context.discard.length,
-          portrait
-        );
+        if (["swords", "wands"].includes(gameObj.card.suit)) {
+          Animation.MonsterCardAttack(
+            gameObj,
+            state.context.discard.length,
+            portrait
+          );
+        } else {
+          Animation.SendToDiscard(
+            gameObj,
+            state.context.discard.length,
+            portrait
+          );
+        }
       }
 
       // Move room cards back to the deck when the player escapes.
