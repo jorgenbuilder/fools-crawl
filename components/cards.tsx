@@ -46,10 +46,10 @@ export default function Cards() {
       Animation.DyingCards(GraphicsEntities.WithCard);
     }
 
-    GraphicsSystems.DestinationSystem(
-      elapsedTime,
-      GraphicsEntities.WithDestination
-    );
+    // GraphicsSystems.DestinationSystem(
+    //   elapsedTime,
+    //   GraphicsEntities.WithDestination
+    // );
 
     GraphicsEntities.WithCard.entities.forEach((card, i) => {
       // Set the position and rotation of the dummy object based on the card's state

@@ -12,11 +12,11 @@ export namespace GraphicsConstants {
 
 export namespace GraphicsEntities {
   export type PositionComponent = { position: THREE.Vector3 };
-  export type RotationComponent = { rotation: THREE.Vector3 };
+  export type RotationComponent = { rotation: THREE.Euler };
   export type DestinationComponent = {
     destination: {
       position?: THREE.Vector3;
-      rotation?: THREE.Vector3;
+      rotation?: THREE.Euler;
     };
   };
 
@@ -31,8 +31,8 @@ export namespace GraphicsEntities {
   export type Camera = {
     camera: null;
   } & PositionComponent &
-    RotationComponent &
-    DestinationComponent;
+    RotationComponent;
+  // DestinationComponent;
 
   /** Union type defining all possible entities of our Graphics world. */
   type Entity = Camera | Card;
@@ -71,8 +71,9 @@ export namespace GraphicsSystems {
     for (const entity of bucket.entities) {
       if (!!entity.destination?.position)
         entity.position.lerp(entity.destination.position, ease);
-      if (!!entity.destination?.rotation)
-        entity.rotation.lerp(entity.destination.rotation, ease);
+      // Can't lerp a euler, gotta do quaternions, i.e. im out!
+      // if (!!entity.destination?.rotation)
+      //   entity.rotation.lerp(entity.destination.rotation, ease);
       i++;
     }
   }
@@ -92,7 +93,7 @@ export namespace CardLayouts {
         (GraphicsConstants.CARD_SIZE[1] + GraphicsConstants.SPACING) / 2,
       0
     );
-    const rotation = GraphicsEntities.DefaultVec3.clone().set(
+    const rotation = GraphicsEntities.DefaultEuler.clone().set(
       card.rotation.x,
       0,
       0
@@ -109,7 +110,7 @@ export namespace CardLayouts {
       0,
       0
     );
-    const rotation = GraphicsEntities.DefaultVec3.clone().set(
+    const rotation = GraphicsEntities.DefaultEuler.clone().set(
       card.rotation.x,
       0,
       0
@@ -134,12 +135,12 @@ export namespace CardLayouts {
         )
       : GraphicsEntities.DefaultVec3.clone().set(2.8, 0, -i * 0.01);
     const rotation = portrait
-      ? GraphicsEntities.DefaultVec3.clone().set(
+      ? GraphicsEntities.DefaultEuler.clone().set(
           card.rotation.x,
           Math.PI, // face down
           Math.PI * 0.5 // turn sideways
         )
-      : GraphicsEntities.DefaultVec3.clone().set(
+      : GraphicsEntities.DefaultEuler.clone().set(
           card.rotation.x,
           Math.PI, // face down
           0
@@ -163,16 +164,16 @@ export namespace CardLayouts {
               GraphicsConstants.SPACING +
               0.5
             ),
-            -i * 0.01
+            i * 0.01
           )
-        : GraphicsEntities.DefaultVec3.clone().set(-2.8, 0, -i * 0.01),
+        : GraphicsEntities.DefaultVec3.clone().set(-2.8, 0, i * 0.01),
       rotation: portrait
         ? GraphicsEntities.DefaultEuler.clone().set(
             card.rotation.x,
             card.rotation.y,
             Math.PI * 0.5 // turn sideways
           )
-        : GraphicsEntities.DefaultVec3.clone().set(
+        : GraphicsEntities.DefaultEuler.clone().set(
             card.rotation.x,
             card.rotation.y,
             0
@@ -184,10 +185,10 @@ export namespace CardLayouts {
   export function DefaultCard(): Omit<GraphicsEntities.Card, "card"> {
     return {
       position: GraphicsEntities.DefaultVec3.clone(),
-      rotation: GraphicsEntities.DefaultVec3.clone().set(0, Math.PI, 0), // face down
+      rotation: GraphicsEntities.DefaultEuler.clone().set(0, Math.PI, 0), // face down
       destination: {
         position: GraphicsEntities.DefaultVec3.clone(),
-        rotation: GraphicsEntities.DefaultVec3.clone().set(0, Math.PI, 0), // face down
+        rotation: GraphicsEntities.DefaultEuler.clone().set(0, Math.PI, 0), // face down
       },
     };
   }
@@ -195,17 +196,113 @@ export namespace CardLayouts {
   /** A default position for the camera. */
   export function DefaultCamera(): Omit<GraphicsEntities.Camera, "camera"> {
     return {
-      position: GraphicsEntities.DefaultVec3.clone().set(0, 0, 0),
-      rotation: GraphicsEntities.DefaultVec3.clone(),
-      destination: {
-        position: GraphicsEntities.DefaultVec3.clone().set(0, 0, 5),
-        rotation: GraphicsEntities.DefaultVec3.clone(),
-      },
+      // position: GraphicsEntities.DefaultVec3.clone().set(0, 0, 0),
+      // rotation: GraphicsEntities.DefaultEuler.clone(),
+      // destination: {
+      position: GraphicsEntities.DefaultVec3.clone().set(0, 0, 5),
+      rotation: GraphicsEntities.DefaultEuler.clone(),
+      // },
     };
   }
 }
 
 export namespace Animation {
+  export function MoveCard(
+    card: GraphicsEntities.Card,
+    to: { position: THREE.Vector3; rotation: THREE.Euler }
+  ) {
+    gsap.to(card.position, {
+      x: to.position.x,
+      y: to.position.y,
+      duration: 0.25,
+    });
+    gsap.to(card.position, {
+      z: to.position.z,
+      duration: 0.125,
+    });
+    gsap.to(card.rotation, {
+      x: to.rotation.x,
+      y: to.rotation.y,
+      z: to.rotation.z,
+      duration: 0.125,
+    });
+  }
+
+  export function SendToDiscard(
+    card: GraphicsEntities.Card,
+    i: number,
+    portrait: boolean
+  ) {
+    const { position, rotation } = CardLayouts.InDiscard(card, i, portrait);
+    gsap
+      .timeline({})
+      .add("start")
+      .to(
+        card.position,
+        {
+          z: card.position.z + 1,
+          duration: 0.2,
+        },
+        "start"
+      )
+      .to(
+        card.position,
+        {
+          x: position.x,
+          y: position.y,
+          z: position.z,
+          duration: 0.2,
+        },
+        "end"
+      )
+      .to(
+        card.position,
+        {
+          x: position.x,
+          y: position.y,
+          duration: 0.4,
+        },
+        "start"
+      );
+  }
+
+  export function MoveCardFrom(
+    card: GraphicsEntities.Card,
+    from: { position: THREE.Vector3; rotation: THREE.Euler },
+    to: { position: THREE.Vector3; rotation: THREE.Euler }
+  ) {
+    gsap
+      .timeline({
+        delay: 0.25,
+      })
+      .delay(0.5)
+      .to(card.position, {
+        z: from.position.z + 0.5,
+        duration: 0.125,
+      })
+      .add("start")
+      .to(
+        card.position,
+        {
+          x: to.position.x,
+          y: to.position.y,
+          z: to.position.z,
+          duration: 0.25,
+        },
+        "start"
+      )
+      .to(
+        card.rotation,
+        {
+          x: to.rotation.x,
+          y: to.rotation.y,
+          z: to.rotation.z,
+          duration: 0.125,
+        },
+        "start"
+      );
+  }
+
   /** Makes all of the cards in the deck dance. */
   export function DancingCards(
     /** Elapsed time. */
@@ -216,11 +313,11 @@ export namespace Animation {
     portrait: boolean
   ) {
     let i = 0;
-    for (const { destination, rotation } of bucket.entities) {
+    for (const { position, rotation } of bucket.entities) {
       const radius = portrait ? 1 : 3;
       const theta = (i / bucket.entities.length) * Math.PI * 2 + time * 1;
 
-      destination.position.set(
+      position.set(
         radius * Math.cos(theta),
         radius * Math.sin(theta) * 0.5,
         (i % (56 / 26)) * 0.01 + i * 0.015
@@ -238,9 +335,9 @@ export namespace Animation {
     /** A selector on the ECS containing all cards. */
     bucket: ArchetypeBucket<GraphicsEntities.Card>
   ) {
-    for (const { destination } of bucket.entities) {
-      destination.position.x += 0.0125 - Math.random() * 0.025;
-      destination.position.y += 0.0125 - Math.random() * 0.025;
+    for (const { position } of bucket.entities) {
+      position.x += 0.0125 - Math.random() * 0.025;
+      position.y += 0.0125 - Math.random() * 0.025;
     }
   }
 
@@ -271,16 +368,15 @@ export namespace Animation {
         const currentIntensity =
           shakeIntensity * (1 - intensityDecayFactor * i);
         const vec = randomVec3(currentIntensity);
-        camera.destination.position.x = vec.x * currentIntensity;
-        camera.destination.rotation.z =
-          vec.x * Math.PI * currentIntensity * 0.25;
+        camera.position.x = vec.x * currentIntensity;
+        camera.rotation.z = vec.x * Math.PI * currentIntensity * 0.25;
       }, interval * i);
     }
 
     // Reset camera position after shaking
     setTimeout(() => {
-      camera.destination.position.set(0, 0, camera.position.z);
-      camera.destination.rotation.set(0, 0, 0);
+      camera.position.set(0, 0, camera.position.z);
+      camera.rotation.set(0, 0, 0);
     }, shakeDuration);
   }
 }

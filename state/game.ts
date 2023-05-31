@@ -160,7 +160,7 @@ export namespace GameLogic {
       default:
         console.error(`Unknown suit: ${suit}`);
     }
-    update.discard = [index, ...state.discard];
+    update.discard = [...state.discard, index];
     update.room = state.room.map((x) => (x === index ? undefined : x));
     return { ...state, ...update };
   }
@@ -442,10 +442,13 @@ namespace GameEffects {
         for (const card of GraphicsEntities.WithCard.entities) {
           setTimeout(() => {
             // Timer because dancing card animation in card component hijacks this
-            CardLayouts.InDeck(
+            Animation.MoveCard(
               card,
-              state.context.deck.indexOf(card.card.index),
-              portrait
+              CardLayouts.InDeck(
+                card,
+                state.context.deck.indexOf(card.card.index),
+                portrait
+              )
             );
           }, 10);
         }
@@ -457,11 +460,17 @@ namespace GameEffects {
           const i = state.context.room.indexOf(card);
           const gameObj = GraphicsEntities.WithCard.entities[card];
           setTimeout(() => {
-            if (portrait) {
-              CardLayouts.RoomGrid(gameObj, i);
-            } else {
-              CardLayouts.RoomRow(gameObj, i);
-            }
+            Animation.MoveCardFrom(
+              gameObj,
+              CardLayouts.InDeck(
+                gameObj,
+                state.context.deck.indexOf(gameObj.card.index),
+                portrait
+              ),
+              portrait
+                ? CardLayouts.RoomGrid(gameObj, i)
+                : CardLayouts.RoomRow(gameObj, i)
+            );
             GameEffects.Hooks.DealCard(state.context);
           }, 250 * (i + 2));
         }
@@ -470,11 +479,12 @@ namespace GameEffects {
       // Discard cards when the player folds.
       if (state.matches("GamePlay.FoldCard")) {
         const card = (state.event as GameMachine.ActionFoldCard).index;
-        const i = state.context.discard.indexOf(card);
         const gameObj = GraphicsEntities.WithCard.entities[card];
-        setTimeout(() => {
-          CardLayouts.InDiscard(gameObj, i, portrait);
-        }, 50 * (i + 1));
+        Animation.SendToDiscard(
+          gameObj,
+          state.context.discard.length,
+          portrait
+        );
       }
 
       // Move room cards back to the deck when the player escapes.
@@ -483,10 +493,13 @@ namespace GameEffects {
           const i = state.context.room.indexOf(card);
           const gameObj = GraphicsEntities.WithCard.entities[card];
           setTimeout(() => {
-            CardLayouts.InDeck(
+            Animation.MoveCard(
               gameObj,
-              state.context.deck.indexOf(gameObj.card.index),
-              portrait
+              CardLayouts.InDeck(
+                gameObj,
+                state.context.deck.indexOf(gameObj.card.index),
+                portrait
+              )
             );
           }, 150 * (i + 1));
         }
