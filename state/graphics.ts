@@ -303,6 +303,48 @@ export namespace Animation {
       );
   }
 
+  // TODO: Deck doesn't animate nicely over time
+
+  export function Escape(cards: GraphicsEntities.Card[], portrait: boolean) {
+    const timeline = gsap.timeline();
+    const prep = portrait
+      ? CardLayouts.RoomGrid(cards[0], 3)
+      : CardLayouts.RoomRow(cards[0], 3);
+    const deck = CardLayouts.InDeck(cards[0], 0, portrait);
+    timeline
+      .add("start")
+      .to(
+        cards.map((card, i) => card.position),
+        {
+          x: prep.position.x,
+          y: prep.position.y,
+          z: prep.position.z,
+          duration: 0.25,
+        },
+        "start"
+      )
+      .to(
+        cards.map((card) => card.rotation),
+        {
+          x: prep.rotation.x,
+          y: Math.PI,
+          z: prep.rotation.z,
+          duration: 0.125,
+        },
+        "start"
+      )
+      .add("deck")
+      .to(
+        cards.map((card) => card.position),
+        {
+          x: deck.position.x,
+          y: deck.position.y,
+          z: 0,
+        },
+        "deck"
+      );
+  }
+
   /** Makes all of the cards in the deck dance. */
   export function DancingCards(
     /** Elapsed time. */

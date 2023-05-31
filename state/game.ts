@@ -489,20 +489,10 @@ namespace GameEffects {
 
       // Move room cards back to the deck when the player escapes.
       if (state.matches("GamePlay.Escape")) {
-        for (const card of state.context.room.filter((x) => x !== undefined)) {
-          const i = state.context.room.indexOf(card);
-          const gameObj = GraphicsEntities.WithCard.entities[card];
-          setTimeout(() => {
-            Animation.MoveCard(
-              gameObj,
-              CardLayouts.InDeck(
-                gameObj,
-                state.context.deck.indexOf(gameObj.card.index),
-                portrait
-              )
-            );
-          }, 150 * (i + 1));
-        }
+        const cards = state.context.room
+          .map((x) => GraphicsEntities.WithCard.entities[x])
+          .filter((x) => x !== undefined);
+        Animation.Escape(cards, portrait);
       }
     });
   }
