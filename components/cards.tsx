@@ -5,7 +5,7 @@ import { useTexture } from "@react-three/drei";
 import { GameMachine } from "../state/game";
 import { Animation, GraphicsEntities } from "../state/graphics";
 import { useArbitraryStore } from "../state/zustand";
-import { useTextureStore } from "../state/TextureLoader";
+import { CardArt } from "../state/TextureLoader";
 
 export default function Cards() {
   const { state, send } = GameMachine.use();
@@ -43,7 +43,7 @@ export function Card({
 }) {
   const ref = useRef<THREE.Group>();
   const back = useTexture("/back.png");
-  const front = useTextureStore((state) => state.cardArt[card.card.index]);
+  const front = CardArt.getTexture(card.card.index);
 
   // Update the card's position and rotation every frame
   useFrame(() => {

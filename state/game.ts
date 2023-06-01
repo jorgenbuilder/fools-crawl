@@ -464,6 +464,13 @@ export namespace GameEffects {
           .filter((x) => x !== undefined);
         Animation.Escape(cards, portrait);
       }
+
+      if (state.matches("GamePlay.Win") || state.matches("GamePlay.GameOver")) {
+        Animation.MoveCamera(
+          GraphicsEntities.WithCamera.entities[0],
+          CardLayouts.DefaultCamera()
+        );
+      }
     });
   }
 
