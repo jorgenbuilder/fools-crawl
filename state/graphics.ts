@@ -416,6 +416,47 @@ export namespace Animation {
       .add(() => Discard(card, positionInDiscard, portrait));
   }
 
+  export function ItemCardUse(
+    card: GraphicsEntities.Card,
+    positionInDiscard: number,
+    portrait: boolean,
+    fail: boolean
+  ) {
+    const timeline = gsap.timeline();
+    return timeline
+      .to(card.position, {
+        x: 0,
+        y: 0,
+        z: 2,
+        duration: 0.33,
+        ease: "power2.out",
+      })
+      .add("use")
+      .to(card.position, {
+        y: 0.125,
+        z: 2.25,
+        duration: 0.25,
+      })
+      .call(() => {
+        if (card.card.suit === "cups") {
+          Audio.PlaySound(fail ? "fail" : "potion");
+        } else {
+          Audio.PlaySound("shield");
+        }
+      })
+      .to(card.position, {
+        y: 0,
+        z: 2,
+        duration: 0.25,
+      })
+      .to(card.position, {
+        y: 0,
+        z: 2,
+        duration: 0.5,
+      })
+      .add(() => Discard(card, positionInDiscard, portrait));
+  }
+
   export function Discard(
     card: GraphicsEntities.Card,
     positionInDiscard: number,

@@ -23,7 +23,7 @@ const camera = GraphicsEntities.WithCamera.entities[0];
 gsap.globalTimeline.clear();
 gsap
   .timeline({ repeat: -1, repeatDelay: 1 })
-  .add(Animation.MonsterCardAttack(card, 0, false));
+  .add(Animation.ItemCardUse(card, 0, false, false));
 
 function Scene() {
   const ref = useRef<THREE.Group>();

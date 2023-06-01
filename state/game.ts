@@ -387,14 +387,9 @@ export namespace GameEffects {
       // Would be nice if I didn't have to introspect the state here, and if it just published a nice event.
     }
 
-    export function DrinkPotion(state: GameLogic.GameState, value: number) {
-      if (state.wasLastActionPotion) Audio.PlaySound("fail");
-      else Audio.PlaySound("potion");
-    }
+    export function DrinkPotion(state: GameLogic.GameState, value: number) {}
 
-    export function TakeShield(state: GameLogic.GameState, value: number) {
-      Audio.PlaySound("shield");
-    }
+    export function TakeShield(state: GameLogic.GameState, value: number) {}
 
     export function GameOver(state: GameLogic.GameState) {
       Audio.PlaySound("lose");
@@ -479,10 +474,11 @@ export namespace GameEffects {
             portrait
           );
         } else {
-          Animation.SendToDiscard(
+          Animation.ItemCardUse(
             gameObj,
             state.context.discard.length,
-            portrait
+            portrait,
+            state.context.wasLastActionPotion
           );
         }
       }
