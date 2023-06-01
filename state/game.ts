@@ -27,63 +27,13 @@ import type { Store } from "zustand-middleware-xstate";
 import { Animation, CardLayouts, GraphicsEntities } from "./graphics";
 import { useArbitraryStore } from "./zustand";
 import { Audio } from "./audio";
+import { TarotDeck } from "./TarotDeck";
 
 export namespace GameConstants {
   /** Number of cards in the deck. */
   export const DECK_SIZE = 56;
   /** Maximum HP of the player. */
   export const MAX_HEALTH = 20;
-}
-
-export namespace TarotDeck {
-  export const DECK_SIZE = 78;
-
-  /** A tarot card suit: swords, wands, pentacles or cups. */
-  export type Suit = "swords" | "wands" | "pentacles" | "cups";
-
-  /** A specific tarot card. */
-  export interface TarotCard {
-    suit: Suit;
-    value: number;
-    index: number;
-  }
-
-  /** Map an index from 0-77 to a specific tarot card. */
-  export function getTarotCard(index: number): TarotCard {
-    if (index < 0 || index >= DECK_SIZE) throw new Error("Invalid index");
-    const suit = (["swords", "wands", "pentacles", "cups"] as Suit[])[
-      Math.floor(index / 14)
-    ];
-    const value = (index % 14) + 1;
-    return { suit, value, index };
-  }
-
-  /** Return a new deck of cards (only indices, not card objects) */
-  export function NewDeck() {
-    return Array(GameConstants.DECK_SIZE)
-      .fill(0)
-      .map((_, i) => i);
-  }
-
-  /** Shuffle an array in place using a Fisher-Yates. */
-  export function shuffleArray<T>(array: T[]) {
-    let currentIndex = array.length;
-    let temporaryValue, randomIndex;
-
-    // While there remain elements to shuffle...
-    while (0 !== currentIndex) {
-      // Pick a remaining element...
-      randomIndex = Math.floor(Math.random() * currentIndex);
-      currentIndex -= 1;
-
-      // And swap it with the current element.
-      temporaryValue = array[currentIndex];
-      array[currentIndex] = array[randomIndex];
-      array[randomIndex] = temporaryValue;
-    }
-
-    return array;
-  }
 }
 
 export namespace GameLogic {
@@ -126,8 +76,18 @@ export namespace GameLogic {
   }
 
   /** Start a new game. */
-  export function NewGame(): GameState {
-    return DefaultGameState();
+  export function NewGame(state: GameState): GameState {
+    // If the deck is already fresh, we use it instead of creating a new one.
+    // This allows prioritized preloading of card assets based on the deck order.
+    // (Deck initialized on load, but also when user clicks "new game".)
+    const newState = DefaultGameState();
+    if (state.deck.length === GameConstants.DECK_SIZE) {
+      if (!TarotDeck.isShuffled(state.deck)) {
+        throw new Error("Ensure the deck is shuffled during initialization.");
+      }
+      return { ...newState, deck: state.deck };
+    }
+    return newState;
   }
 
   /** Deal a room of cards from the deck. */
@@ -350,7 +310,7 @@ export namespace GameMachine {
     },
     {
       services: {
-        newGame: async () => GameLogic.NewGame(),
+        newGame: async (context) => GameLogic.NewGame(context),
         deal: async (context) => GameLogic.Deal(context),
         foldCard: async (context, event) =>
           GameLogic.FoldCard(context, event.index),

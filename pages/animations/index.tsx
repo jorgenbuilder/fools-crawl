@@ -2,10 +2,11 @@ import gsap from "gsap";
 import { Canvas, useFrame } from "@react-three/fiber";
 import styles from "../../styles/Home.module.css";
 import { FPS } from "../../components/fps";
-import Cards, { Card } from "../../components/cards";
-import { useEffect, useRef } from "react";
+import { Card } from "../../components/cards";
+import { useRef } from "react";
 import { Animation, CardLayouts, GraphicsEntities } from "../../state/graphics";
-import { GameEffects, TarotDeck } from "../../state/game";
+import { GameEffects } from "../../state/game";
+import { TarotDeck } from "../../state/TarotDeck";
 import Camera from "../../components/camera";
 
 if (GraphicsEntities.World.entities.length === 0) {
