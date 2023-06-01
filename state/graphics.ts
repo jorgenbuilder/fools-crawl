@@ -3,7 +3,7 @@ import gsap from "gsap";
 import { CustomEase } from "gsap/dist/CustomEase";
 import { ArchetypeBucket, World as ECS } from "miniplex";
 import { Audio } from "./audio";
-import { TarotDeck } from "./game"; // Meant to be unidirectional. Careful!
+import { TarotDeck } from "./TarotDeck";
 
 gsap.registerPlugin(CustomEase);
 
@@ -26,7 +26,7 @@ export namespace GraphicsEntities {
 
   /** A Graphics card in the game. */
   export type Card = {
-    card: { index: number; suit: TarotDeck.Suit; value: number };
+    card: TarotDeck.TarotCard;
   } & PositionComponent &
     RotationComponent &
     DestinationComponent;
@@ -200,17 +200,31 @@ export namespace CardLayouts {
   /** A default position for the camera. */
   export function DefaultCamera(): Omit<GraphicsEntities.Camera, "camera"> {
     return {
-      // position: GraphicsEntities.DefaultVec3.clone().set(0, 0, 0),
-      // rotation: GraphicsEntities.DefaultEuler.clone(),
-      // destination: {
-      position: GraphicsEntities.DefaultVec3.clone().set(0, 0, 5),
+      position: GraphicsEntities.DefaultVec3.clone().set(0, 0, 6),
       rotation: GraphicsEntities.DefaultEuler.clone(),
-      // },
     };
   }
 }
 
 export namespace Animation {
+  export function MoveCamera(
+    camera: GraphicsEntities.Camera,
+    to: { position: THREE.Vector3; rotation: THREE.Euler }
+  ) {
+    gsap.to(camera.position, {
+      delay: 0.5,
+      x: to.position.x,
+      y: to.position.y,
+      z: to.position.z,
+      duration: 0.5,
+    });
+    gsap.to(camera.rotation, {
+      x: to.rotation.x,
+      y: to.rotation.y,
+      z: to.rotation.z,
+      duration: 0.5,
+    });
+  }
   export function MoveCard(
     card: GraphicsEntities.Card,
     to: { position: THREE.Vector3; rotation: THREE.Euler }

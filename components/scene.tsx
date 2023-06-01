@@ -4,7 +4,6 @@ import { GameMachine } from "../state/game";
 import Cards from "./cards";
 import Title from "./title";
 import Camera from "./camera";
-import Loader from "./loader";
 import Lose from "./lose";
 import Win from "./win";
 import Escape from "./escape";
@@ -19,7 +18,7 @@ const Scene = () => {
   } = GameMachine.use();
   const { portrait } = useArbitraryStore();
   return (
-    <Suspense fallback={<Loader />}>
+    <Suspense fallback={<></>}>
       <ambientLight intensity={0.5} />
       {matches("GamePlay.Win") && <Win />}
       {matches("GamePlay.GameOver") && <Lose />}

@@ -374,8 +374,13 @@ export namespace GameEffects {
   export function addCamera() {
     GraphicsEntities.World.add({
       camera: null,
-      ...CardLayouts.DefaultCamera(),
+      position: GraphicsEntities.DefaultVec3.clone(),
+      rotation: GraphicsEntities.DefaultEuler.clone(),
     });
+    Animation.MoveCamera(
+      GraphicsEntities.WithCamera.entities[0],
+      CardLayouts.DefaultCamera()
+    );
   }
 
   /** Subscribes to the game machine and updates the game world accordingly. */
@@ -399,6 +404,15 @@ export namespace GameEffects {
             );
           }, 10);
         }
+
+        Animation.MoveCamera(GraphicsEntities.WithCamera.entities[0], {
+          position: GraphicsEntities.DefaultVec3.clone().set(
+            0,
+            0,
+            portrait ? 7 : 4
+          ),
+          rotation: GraphicsEntities.DefaultEuler.clone().set(0, 0, 0),
+        });
       }
 
       // Deal cards at the start of the turn.
