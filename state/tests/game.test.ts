@@ -1,22 +1,6 @@
 import { GameConstants, GameLogic } from "../game";
-
-namespace TestData {
-  export function GameOverState(): GameLogic.GameState {
-    return {
-      health: 0,
-      shield: 0,
-      wasLastActionPotion: false,
-      lastMonsterBlocked: undefined,
-      didEscapeLastRoom: false,
-      room: [11, 12, 13, undefined],
-      discard: [3, 2, 1, 0],
-      deck: [10, 9, 8, 7, 6, 5, 4],
-      rules: {
-        escape: { always: true },
-      },
-    };
-  }
-}
+import { rules, standardRules } from "../rules";
+import EscapeRules from "../rules/EscapeRules";
 
 namespace TestSuites {
   /** Ensure that the new game state is setup correctly. */
@@ -161,27 +145,26 @@ namespace TestSuites {
 
   export function DrinkingPotions(state = GameLogic.DefaultGameState()) {
     describe("Drinking potions", () => {
-      // Since we change health values a lot, we'll reset it after each test.
-      afterEach(() => {
-        state.wasLastActionPotion = false;
-        state.health = GameConstants.MAX_HEALTH;
+      let game = { ...state };
+      beforeEach(() => {
+        game = { ...state };
       });
 
       it("Should increase player health", () => {
-        state.health = 10;
-        const update = GameLogic.DrinkPotion(state, 1);
+        game.health = 10;
+        const update = GameLogic.DrinkPotion(game, 1);
         expect(update.health).toBe(11);
         expect(update.wasLastActionPotion).toBe(true);
       });
 
       it("Should not increase health above max", () => {
-        const update = GameLogic.DrinkPotion(state, 1);
+        const update = GameLogic.DrinkPotion(game, 1);
         expect(update.health).toBe(GameConstants.MAX_HEALTH);
       });
 
       it("Should not increase health when drinking multiple potions in a row", () => {
-        state.health = 10;
-        const update = GameLogic.DrinkPotion(state, 1);
+        game.health = 10;
+        const update = GameLogic.DrinkPotion(game, 1);
         expect(update.health).toBe(11);
         expect(update.wasLastActionPotion).toBe(true);
         const update2 = GameLogic.DrinkPotion(update, 1);
@@ -211,56 +194,54 @@ namespace TestSuites {
 
   export function EndingRooms(state: GameLogic.GameState) {
     describe("Escaping the room", () => {
-      let update = { ...state };
+      let game = { ...state };
       beforeEach(() => {
-        update.room = [];
-        update.didEscapeLastRoom = false;
-        update.rules = {
-          escape: {},
-        };
+        game.room = [];
+        game.didEscapeLastRoom = false;
+        rules.resetRules();
       });
 
       it("Should move remaining cards to the deck and update didEscapeLastRoom", () => {
-        update = GameLogic.EscapeRoom(state);
-        expect(update.deck.length).toBe(state.deck.length + state.room.length);
-        expect(update.didEscapeLastRoom).toBe(true);
+        game = GameLogic.EscapeRoom(state);
+        expect(game.deck.length).toBe(state.deck.length + state.room.length);
+        expect(game.didEscapeLastRoom).toBe(true);
       });
 
       it("Should return false if the never escape rule is set", () => {
-        update.rules.escape.never = true;
-        update.rules.escape.always = true;
-        expect(GameLogic.IsRoomEscapable(update)).toBeFalsy();
+        rules.registerRule(EscapeRules.Never);
+        rules.registerRule(EscapeRules.Always);
+        expect(GameLogic.IsRoomEscapable(game)).toBeFalsy();
       });
 
       it("Should return true if the always escape rule is set", () => {
-        update.rules.escape.always = true;
-        expect(GameLogic.IsRoomEscapable(update)).toBeTruthy();
+        rules.registerRule(EscapeRules.Always);
+        expect(GameLogic.IsRoomEscapable(game)).toBeTruthy();
       });
 
       it("Should return true if no enemies and the noEnemies rule is set", () => {
-        update.rules.escape.noEnemies = true;
-        update.room = [69, 70, 71, 72];
-        expect(GameLogic.IsRoomEscapable(update)).toBeTruthy();
+        rules.registerRule(EscapeRules.NoEnemies);
+        game.room = [69, 70, 71, 72];
+        expect(GameLogic.IsRoomEscapable(game)).toBeTruthy();
       });
 
       it("Should return false if enemies and the noEnemies rule is set", () => {
-        update.rules.escape.noEnemies = true;
-        update.room = [0, 1, 2, 3];
-        expect(GameLogic.IsRoomEscapable(update)).toBeFalsy();
+        rules.registerRule(EscapeRules.NoEnemies);
+        game.room = [0, 1, 2, 3];
+        expect(GameLogic.IsRoomEscapable(game)).toBeFalsy();
       });
 
       it("Should return true if player did not escape last room and the lastRoom rule is set", () => {
-        update.rules.escape.noEnemies = true;
-        update.rules.escape.lastRoom = true;
-        update.didEscapeLastRoom = false;
-        update.room = [0, 1, 2, 3];
-        expect(GameLogic.IsRoomEscapable(update)).toBeTruthy();
+        rules.registerRule(EscapeRules.SingleRoom);
+        rules.registerRule(EscapeRules.NoEnemies);
+        game.didEscapeLastRoom = false;
+        game.room = [0, 1, 2, 3];
+        expect(GameLogic.IsRoomEscapable(game)).toBeTruthy();
       });
 
       it("Should return false if player escaped last room and the lastRoom rule is set", () => {
-        update.rules.escape.lastRoom = true;
-        update.didEscapeLastRoom = true;
-        expect(GameLogic.IsRoomEscapable(update)).toBeFalsy();
+        rules.registerRule(EscapeRules.SingleRoom);
+        game.didEscapeLastRoom = true;
+        expect(GameLogic.IsRoomEscapable(game)).toBeFalsy();
       });
     });
     describe("Clearing the room", () => {

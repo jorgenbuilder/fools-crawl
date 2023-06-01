@@ -28,6 +28,7 @@ import { Animation, CardLayouts, GraphicsEntities } from "./graphics";
 import { useArbitraryStore } from "./zustand";
 import { Audio } from "./audio";
 import { TarotDeck } from "./TarotDeck";
+import { rules } from "./rules";
 
 export namespace GameConstants {
   /** Number of cards in the deck. */
@@ -54,23 +55,6 @@ export namespace GameLogic {
     lastMonsterBlocked?: number;
     /** Whether the player escaped the last room they were in. */
     didEscapeLastRoom: boolean;
-    /** Rules controlling gameplay. */
-    rules: GameRules;
-  }
-
-  /** A set of rules to control game play. */
-  export interface GameRules {
-    /** The conditions under which the player can escape a room. */
-    escape: {
-      /** If the room has no enemies. */
-      noEnemies?: boolean;
-      /** If the player did not escape the previous room. */
-      lastRoom?: boolean;
-      /** The player can never escape. */
-      never?: boolean;
-      /** The player can always escape. */
-      always?: boolean;
-    };
   }
 
   /** Return a new object holding the default state of a new game. */
@@ -84,12 +68,6 @@ export namespace GameLogic {
       shield: 0,
       lastMonsterBlocked: undefined,
       didEscapeLastRoom: false,
-      rules: {
-        escape: {
-          noEnemies: true,
-          lastRoom: true,
-        },
-      },
     };
   }
 
@@ -168,7 +146,7 @@ export namespace GameLogic {
   /** If card is a potion, heal the player. */
   export function DrinkPotion(state: GameState, value: number): GameState {
     GameEffects.Hooks.DrinkPotion(state, value);
-    if (state.wasLastActionPotion) return state;
+    if (!rules.canDrink(state)) return state;
     return {
       ...state,
       health: (state.health += Math.min(
@@ -205,24 +183,9 @@ export namespace GameLogic {
     return { ...state, didEscapeLastRoom: false };
   }
 
-  /** Determines whether the player can escape the current room based on game state. */
-  export function IsRoomEscapable({
-    room,
-    didEscapeLastRoom,
-    rules,
-  }: GameState): boolean {
-    const noEnemiesRemain =
-      room
-        .filter((x) => x !== undefined)
-        .find((x) =>
-          ["swords", "wands"].includes(TarotDeck.getTarotCard(x).suit)
-        ) === undefined;
-    if (rules.escape.never) return false;
-    if (rules.escape.always) return true;
-    return (
-      (rules.escape.noEnemies && noEnemiesRemain) ||
-      (rules.escape.lastRoom && !didEscapeLastRoom)
-    );
+  /** Determines whether the player can escape the current room based on game state and rules. */
+  export function IsRoomEscapable(state: GameState): boolean {
+    return rules.canEscape(state);
   }
 
   /** Determines whether the player has completed the room based on game state. */
