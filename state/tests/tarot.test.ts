@@ -1,4 +1,4 @@
-import { TarotDeck } from "../game";
+import { TarotDeck } from "../TarotDeck";
 
 describe("Tarot Deck", () => {
   // Test getTarotCard
@@ -25,6 +25,7 @@ describe("Tarot Deck", () => {
 
     it("should properly shuffle an array", () => {
       expect(shuffledArray).not.toEqual(originalArray);
+      expect(TarotDeck.isShuffled(shuffledArray)).toBe(true);
     });
 
     it("should mutate the original array", () => {

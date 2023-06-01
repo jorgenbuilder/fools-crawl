@@ -11,6 +11,9 @@ namespace TestData {
       room: [11, 12, 13, undefined],
       discard: [3, 2, 1, 0],
       deck: [10, 9, 8, 7, 6, 5, 4],
+      rules: {
+        escape: { always: true },
+      },
     };
   }
 }
@@ -106,7 +109,7 @@ namespace TestSuites {
   }
 
   /** Ensure the monster fighting mechanics work. */
-  export function FightingMonsters(state = GameLogic.NewGame()) {
+  export function FightingMonsters(state = GameLogic.DefaultGameState()) {
     describe("Fighting monsters", () => {
       // Since we change the shield value a lot, we'll reset it after each test.
       afterEach(() => (state.shield = 0));
@@ -156,7 +159,7 @@ namespace TestSuites {
     });
   }
 
-  export function DrinkingPotions(state = GameLogic.NewGame()) {
+  export function DrinkingPotions(state = GameLogic.DefaultGameState()) {
     describe("Drinking potions", () => {
       // Since we change health values a lot, we'll reset it after each test.
       afterEach(() => {
@@ -188,7 +191,7 @@ namespace TestSuites {
     });
   }
 
-  export function TakingShields(state = GameLogic.NewGame()) {
+  export function TakingShields(state = GameLogic.DefaultGameState()) {
     describe("Taking shields", () => {
       it("Should increase shield value", () => {
         expect(GameLogic.TakeShield(state, 1).shield).toBe(1);
@@ -208,26 +211,56 @@ namespace TestSuites {
 
   export function EndingRooms(state: GameLogic.GameState) {
     describe("Escaping the room", () => {
+      let update = { ...state };
+      beforeEach(() => {
+        update.room = [];
+        update.didEscapeLastRoom = false;
+        update.rules = {
+          escape: {},
+        };
+      });
+
       it("Should move remaining cards to the deck and update didEscapeLastRoom", () => {
-        const update = GameLogic.EscapeRoom(state);
+        update = GameLogic.EscapeRoom(state);
         expect(update.deck.length).toBe(state.deck.length + state.room.length);
         expect(update.didEscapeLastRoom).toBe(true);
       });
-      it("Should allow player to escape if there are no enemies", () => {
-        const update = { ...state, room: [69, 70, 71, 72] };
-        expect(GameLogic.IsRoomEscapable(update)).toBe(true);
+
+      it("Should return false if the never escape rule is set", () => {
+        update.rules.escape.never = true;
+        update.rules.escape.always = true;
+        expect(GameLogic.IsRoomEscapable(update)).toBeFalsy();
       });
-      it("Should allow player to escape if they didn't escape the last room", () => {
-        const update = { ...state, didEscapeLastRoom: false };
-        expect(GameLogic.IsRoomEscapable(update)).toBe(true);
+
+      it("Should return true if the always escape rule is set", () => {
+        update.rules.escape.always = true;
+        expect(GameLogic.IsRoomEscapable(update)).toBeTruthy();
       });
-      it("Should not allow player to escape if there enemies and they escaped the last room", () => {
-        const update = {
-          ...state,
-          room: [0, 1, 2, 3],
-          didEscapeLastRoom: true,
-        };
-        expect(GameLogic.IsRoomEscapable(update)).toBe(false);
+
+      it("Should return true if no enemies and the noEnemies rule is set", () => {
+        update.rules.escape.noEnemies = true;
+        update.room = [69, 70, 71, 72];
+        expect(GameLogic.IsRoomEscapable(update)).toBeTruthy();
+      });
+
+      it("Should return false if enemies and the noEnemies rule is set", () => {
+        update.rules.escape.noEnemies = true;
+        update.room = [0, 1, 2, 3];
+        expect(GameLogic.IsRoomEscapable(update)).toBeFalsy();
+      });
+
+      it("Should return true if player did not escape last room and the lastRoom rule is set", () => {
+        update.rules.escape.noEnemies = true;
+        update.rules.escape.lastRoom = true;
+        update.didEscapeLastRoom = false;
+        update.room = [0, 1, 2, 3];
+        expect(GameLogic.IsRoomEscapable(update)).toBeTruthy();
+      });
+
+      it("Should return false if player escaped last room and the lastRoom rule is set", () => {
+        update.rules.escape.lastRoom = true;
+        update.didEscapeLastRoom = true;
+        expect(GameLogic.IsRoomEscapable(update)).toBeFalsy();
       });
     });
     describe("Clearing the room", () => {
@@ -285,26 +318,27 @@ describe("Game", () => {
     });
 
     describe("Dealing cards for a room", () =>
-      TestSuites.DealingRooms(GameLogic.NewGame()));
+      TestSuites.DealingRooms(GameLogic.DefaultGameState()));
   });
 
   describe("Starting state for a new game", () => {
     describe("New game from scratch", () =>
-      TestSuites.NewGame(GameLogic.NewGame()));
+      TestSuites.NewGame(GameLogic.DefaultGameState()));
     describe("New game from a game over state", () => {
       // TODO: initialize a machine, with a game over state, and then start a new game
     });
   });
 
   describe("Folding cards", () =>
-    TestSuites.FoldingCards(GameLogic.Deal(GameLogic.NewGame())));
+    TestSuites.FoldingCards(GameLogic.Deal(GameLogic.DefaultGameState())));
   describe("Fighting monsters", () =>
-    TestSuites.FightingMonsters(GameLogic.NewGame()));
+    TestSuites.FightingMonsters(GameLogic.DefaultGameState()));
   describe("Drinking potions", () =>
-    TestSuites.DrinkingPotions(GameLogic.NewGame()));
+    TestSuites.DrinkingPotions(GameLogic.DefaultGameState()));
   describe("Taking Shields", () =>
-    TestSuites.TakingShields(GameLogic.NewGame()));
-  describe("Ending rooms", () => TestSuites.EndingRooms(GameLogic.NewGame()));
+    TestSuites.TakingShields(GameLogic.DefaultGameState()));
+  describe("Ending rooms", () =>
+    TestSuites.EndingRooms(GameLogic.DefaultGameState()));
   describe("Ending the game", () =>
-    TestSuites.EndingTheGame(GameLogic.NewGame()));
+    TestSuites.EndingTheGame(GameLogic.DefaultGameState()));
 });

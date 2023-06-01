@@ -1,7 +1,6 @@
 import * as THREE from "three";
-import { create } from "zustand";
 import { TarotDeck } from "./TarotDeck";
-import { GameConstants, GameMachine } from "./game";
+import { GameMachine } from "./game";
 
 export const PreloadWorker =
   typeof window === "undefined" ? null : new Worker("preload-worker.js");

@@ -54,6 +54,23 @@ export namespace GameLogic {
     lastMonsterBlocked?: number;
     /** Whether the player escaped the last room they were in. */
     didEscapeLastRoom: boolean;
+    /** Rules controlling gameplay. */
+    rules: GameRules;
+  }
+
+  /** A set of rules to control game play. */
+  export interface GameRules {
+    /** The conditions under which the player can escape a room. */
+    escape: {
+      /** If the room has no enemies. */
+      noEnemies?: boolean;
+      /** If the player did not escape the previous room. */
+      lastRoom?: boolean;
+      /** The player can never escape. */
+      never?: boolean;
+      /** The player can always escape. */
+      always?: boolean;
+    };
   }
 
   /** Return a new object holding the default state of a new game. */
@@ -67,6 +84,12 @@ export namespace GameLogic {
       shield: 0,
       lastMonsterBlocked: undefined,
       didEscapeLastRoom: false,
+      rules: {
+        escape: {
+          noEnemies: true,
+          lastRoom: true,
+        },
+      },
     };
   }
 
@@ -186,6 +209,7 @@ export namespace GameLogic {
   export function IsRoomEscapable({
     room,
     didEscapeLastRoom,
+    rules,
   }: GameState): boolean {
     const noEnemiesRemain =
       room
@@ -193,7 +217,12 @@ export namespace GameLogic {
         .find((x) =>
           ["swords", "wands"].includes(TarotDeck.getTarotCard(x).suit)
         ) === undefined;
-    return noEnemiesRemain || !didEscapeLastRoom;
+    if (rules.escape.never) return false;
+    if (rules.escape.always) return true;
+    return (
+      (rules.escape.noEnemies && noEnemiesRemain) ||
+      (rules.escape.lastRoom && !didEscapeLastRoom)
+    );
   }
 
   /** Determines whether the player has completed the room based on game state. */

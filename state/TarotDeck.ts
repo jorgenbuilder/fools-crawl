@@ -1,5 +1,3 @@
-import { GameConstants } from "./game";
-
 export namespace TarotDeck {
   export const DECK_SIZE = 78;
 
@@ -25,7 +23,7 @@ export namespace TarotDeck {
 
   /** Return a new deck of cards (only indices, not card objects) */
   export function NewDeck() {
-    return Array(GameConstants.DECK_SIZE)
+    return Array(56)
       .fill(0)
       .map((_, i) => i);
   }
