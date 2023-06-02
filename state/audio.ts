@@ -11,6 +11,14 @@ export namespace Audio {
     damage: new Array(5)
       .fill(0)
       .map((_, i) => `/audio/8bit-damage${i + 6}.wav`),
+    pick: new Array(6).fill(0).map((_, i) => `/audio/cards/pick${i + 1}.wav`),
+    place: new Array(6).fill(0).map((_, i) => `/audio/cards/place${i + 1}.wav`),
+    slice: new Array(4).fill(0).map((_, i) => `/audio/cards/slice${i + 1}.wav`),
+    slide: new Array(9).fill(0).map((_, i) => `/audio/cards/slide${i + 1}.wav`),
+    whip: new Array(5).fill(0).map((_, i) => `/audio/cards/whip${i + 1}.wav`),
+    whoosh: new Array(5)
+      .fill(0)
+      .map((_, i) => `/audio/cards/whoosh${i + 1}.wav`),
   };
 
   export type Sounds = keyof typeof SoundConf;

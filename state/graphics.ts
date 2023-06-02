@@ -293,7 +293,9 @@ export namespace Animation {
       .timeline({
         delay: 0.25,
       })
+      .call(() => Audio.PlaySound("pick"))
       .delay(0.5)
+      .call(() => Audio.PlaySound("place"))
       .to(card.position, {
         z: from.position.z + 0.5,
         duration: 0.125,
@@ -319,6 +321,8 @@ export namespace Animation {
         },
         "start"
       );
+    // .add("end")
+    // .call(() => Audio.PlaySound("place"));
   }
 
   // TODO: Deck doesn't animate nicely over time
@@ -378,6 +382,16 @@ export namespace Animation {
         ease: "power2.out",
       })
       .add("attack")
+      .call(
+        () => Audio.PlaySound(card.card.suit === "wands" ? "whoosh" : "whip"),
+        null,
+        0.5
+      )
+      .call(
+        () => card.card.suit === "swords" && Audio.PlaySound("slice"),
+        null,
+        0.6
+      )
       .to(
         card.position,
         {
@@ -406,7 +420,7 @@ export namespace Animation {
           GraphicsEntities.WithCamera,
           Math.max(card.card.value, 0) / 10
         );
-        Audio.PlaySound("damage");
+        card.card.suit === "wands" && Audio.PlaySound("damage");
       })
       .add("reset")
       .to(

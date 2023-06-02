@@ -46,6 +46,23 @@ namespace EscapeRules {
       },
     };
   }
+
+  export class OneEnemy implements Rule {
+    name = "One Enemy Escape";
+    static description =
+      "Player can escape a room so long as there is one or fewer enemies in the room.";
+    static checks = {
+      canEscape: (state: GameLogic.GameState) => {
+        return (
+          state.room
+            .filter((x) => x !== undefined)
+            .filter((x) =>
+              ["swords", "wands"].includes(TarotDeck.getTarotCard(x).suit)
+            ).length <= 1
+        );
+      },
+    };
+  }
 }
 
 export default EscapeRules;

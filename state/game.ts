@@ -343,13 +343,9 @@ export namespace GameEffects {
 
     export function TakeShield(state: GameLogic.GameState, value: number) {}
 
-    export function GameOver(state: GameLogic.GameState) {
-      Audio.PlaySound("lose");
-    }
+    export function GameOver(state: GameLogic.GameState) {}
 
-    export function DealCard(state: GameLogic.GameState) {
-      Audio.PlaySound("deal");
-    }
+    export function DealCard(state: GameLogic.GameState) {}
   }
 
   /** Adds cards to the game world. */
@@ -379,7 +375,6 @@ export namespace GameEffects {
   function SubscribeToGameState() {
     GameMachine.use.subscribe(({ state }) => {
       const { portrait } = useArbitraryStore.getState();
-      console.info(`Game state: ${state.toStrings()}`);
 
       // Stack cards in the deck when the game starts.
       if (state.matches("GamePlay.Start")) {

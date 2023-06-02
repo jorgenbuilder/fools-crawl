@@ -1,0 +1,10 @@
+- [x] Add camera zoom effect
+- [x] Create a preloader
+- [x] Create a rule set system that allows me to change the rules of the game arbitrarily between dungeons, during development, etc.
+- [ ] Add keyboard + controller input system
+- [ ] Create a tutorial
+- [ ] Create a dialog system
+- [ ] Create a system for going dungeon to dungeon with saved progress
+- [ ] Play with bendy cards
+- [ ] Add a rewind mechanic (let send the player back a few turns)
+- [ ] Fix the deck pile animation
