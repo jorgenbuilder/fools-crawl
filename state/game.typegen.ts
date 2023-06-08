@@ -58,6 +58,7 @@ export interface Typegen0 {
   };
   eventsCausingDelays: {};
   eventsCausingGuards: {
+    isCardInRoom: "FOLD_CARD";
     isDungeonComplete: "";
     isHealthDepleted: "";
     isRoomComplete: "";

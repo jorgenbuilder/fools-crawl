@@ -204,6 +204,11 @@ export namespace GameLogic {
   export function IsHealthDepleted({ health }: GameState): boolean {
     return health <= 0;
   }
+
+  /** Determines whether given card is in the room. */
+  export function IsCardInRoom({ room }: GameState, index: number): boolean {
+    return room.includes(index);
+  }
 }
 
 export namespace GameMachine {
@@ -256,7 +261,7 @@ export namespace GameMachine {
             },
             PlayerTurn: {
               on: {
-                FOLD_CARD: "FoldCard",
+                FOLD_CARD: { cond: "isCardInRoom", target: "FoldCard" },
                 ESCAPE: { cond: "isRoomEscapable", target: "Escape" },
               },
             },
@@ -318,6 +323,8 @@ export namespace GameMachine {
         isHealthDepleted: (context) => GameLogic.IsHealthDepleted(context),
         isRoomComplete: (context) => GameLogic.IsRoomComplete(context),
         isRoomEscapable: (context) => GameLogic.IsRoomEscapable(context),
+        isCardInRoom: (context, event) =>
+          GameLogic.IsCardInRoom(context, event.index),
       },
     }
   );
