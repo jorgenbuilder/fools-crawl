@@ -25,6 +25,7 @@ class TextureLoader {
   static loader = new THREE.TextureLoader();
 
   private async LoadAsset(asset: string) {
+    if (PreloadWorker === null) return;
     const i = this.assets.indexOf(asset);
     const buffer = await new Promise<ArrayBuffer>((resolve, reject) => {
       PreloadWorker.onmessage = (e) => resolve(e.data);
