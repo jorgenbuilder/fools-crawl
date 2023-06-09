@@ -1,6 +1,7 @@
 - [x] Add camera zoom effect
 - [x] Create a preloader
 - [x] Create a rule set system that allows me to change the rules of the game arbitrarily between dungeons, during development, etc.
+- [x] Cook up a vibe
 - [ ] Add keyboard + controller input system
 - [ ] Create a tutorial
 - [ ] Create a dialog system
@@ -8,6 +9,5 @@
 - [ ] Play with bendy cards
 - [ ] Add a rewind mechanic (let send the player back a few turns)
 - [ ] Fix the deck pile animation
-- [ ] Cook up a vibe
 - [ ] Implement different views like Inscryption
 - [ ] Setup automatic card animations based on pile positions, so you can just add cards to a pile in game state
