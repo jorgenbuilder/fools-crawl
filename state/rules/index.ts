@@ -1,24 +1,24 @@
-import { Rule, RuleEngine } from "./RuleEngine";
+import Rules from "./RuleEngine";
 import EscapeRules from "./EscapeRules";
 import PotionRules from "./PotionRules";
 
-export const standardRules: Rule[] = [
+export const standardRules: Rules.Rule[] = [
   EscapeRules.SingleRoom,
   EscapeRules.NoEnemies,
   PotionRules.SubsequenceImpotence,
 ];
 
-export const developmentRules: Rule[] = [
+export const developmentRules: Rules.Rule[] = [
   EscapeRules.Always,
   PotionRules.AllYouCanEat,
 ];
 
-export const hardRules: Rule[] = [
+export const hardRules: Rules.Rule[] = [
   EscapeRules.NoEnemies,
   PotionRules.SubsequenceSickness,
 ];
 
-export const rules = new RuleEngine();
+export const rules = new Rules.Engine();
 rules.applyRuleSet(standardRules);
 
 if (typeof window !== "undefined") {

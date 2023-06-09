@@ -12,6 +12,9 @@
   - Allow the player to scry and reorganize the deck
   - Allow the player to play a card from the discard pile again
   - Combine the sun and moon arcana into one dungeon?
+  - Add time limits
+    - Complete the dungeon in a certain time or lose
+    - Speed mode: fold a card in X seconds or one will be randomly chosen!
 - Could give the player a hand
   - Player acquires certain major arcana
   - Major arcana offer power to do cool things

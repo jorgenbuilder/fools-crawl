@@ -3,7 +3,7 @@ import { GameConstants, GameLogic } from "../game";
 import { rules, standardRules } from "../rules";
 import EscapeRules from "../rules/EscapeRules";
 import PotionRules from "../rules/PotionRules";
-import { RuleChecks } from "../rules/RuleEngine";
+import Rules from "../rules/RuleEngine";
 
 namespace TestSuites {
   /** Ensure that the new game state is setup correctly. */
@@ -157,7 +157,7 @@ namespace TestSuites {
       it("Should increase player health", () => {
         game.health = 10;
         game.foldingCard = 42; // ace of cups
-        expect(rules.determine(game, RuleChecks.canDrink)).toBe(true);
+        expect(rules.determine(game, Rules.Determination.canDrink)).toBe(true);
         const update = GameLogic.DrinkPotion(game);
         expect(update.health).toBe(11);
         expect(update.wasLastActionPotion).toBe(true);
@@ -175,7 +175,9 @@ namespace TestSuites {
         const update = GameLogic.DrinkPotion(game);
         expect(update.health).toBe(11);
         expect(update.wasLastActionPotion).toBe(true);
-        expect(rules.determine(update, RuleChecks.canDrink)).toBe(false);
+        expect(rules.determine(update, Rules.Determination.canDrink)).toBe(
+          false
+        );
         const update2 = GameLogic.DrinkPotion(update);
         expect(update2.health).toBe(11);
         expect(update2.wasLastActionPotion).toBe(true);
@@ -202,10 +204,12 @@ namespace TestSuites {
       it("Should increase player health", () => {
         game.health = 10;
         game.foldingCard = 42; // ace of cups
-        rules.determine(game, RuleChecks.canDrink);
-        expect(rules.determine(game, RuleChecks.canDrink)).toBe(true);
+        rules.determine(game, Rules.Determination.canDrink);
+        expect(rules.determine(game, Rules.Determination.canDrink)).toBe(true);
         const update = GameLogic.DrinkPotion(game);
-        expect(rules.determine(update, RuleChecks.canDrink)).toBe(true);
+        expect(rules.determine(update, Rules.Determination.canDrink)).toBe(
+          true
+        );
         expect(update.health).toBe(11);
         expect(update.wasLastActionPotion).toBe(true);
       });
@@ -222,7 +226,9 @@ namespace TestSuites {
         let update = GameLogic.DrinkPotion(game);
         expect(update.health).toBe(11);
         expect(update.wasLastActionPotion).toBe(true);
-        expect(rules.determine(update, RuleChecks.canDrink)).toBe(true);
+        expect(rules.determine(update, Rules.Determination.canDrink)).toBe(
+          true
+        );
         update = GameLogic.DrinkPotion(update);
         expect(update.health).toBe(12);
         expect(update.wasLastActionPotion).toBe(true);
@@ -249,10 +255,12 @@ namespace TestSuites {
       it("Should increase player health", () => {
         game.health = 10;
         game.foldingCard = 42; // ace of cups
-        rules.determine(game, RuleChecks.canDrink);
-        expect(rules.determine(game, RuleChecks.canDrink)).toBe(true);
+        rules.determine(game, Rules.Determination.canDrink);
+        expect(rules.determine(game, Rules.Determination.canDrink)).toBe(true);
         const update = GameLogic.DrinkPotion(game);
-        expect(rules.determine(update, RuleChecks.canDrink)).toBe(true);
+        expect(rules.determine(update, Rules.Determination.canDrink)).toBe(
+          true
+        );
         expect(update.health).toBe(11);
         expect(update.wasLastActionPotion).toBe(true);
       });
@@ -263,7 +271,9 @@ namespace TestSuites {
         let update = GameLogic.DrinkPotion(game);
         expect(update.health).toBe(11);
         expect(update.wasLastActionPotion).toBe(true);
-        expect(rules.determine(update, RuleChecks.canDrink)).toBe(true);
+        expect(rules.determine(update, Rules.Determination.canDrink)).toBe(
+          true
+        );
         update = GameLogic.DrinkPotion(update);
         expect(update.health).toBe(10);
         expect(update.wasLastActionPotion).toBe(true);

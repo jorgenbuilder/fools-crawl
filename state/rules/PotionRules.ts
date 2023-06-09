@@ -1,6 +1,6 @@
 import { TarotDeck } from "../TarotDeck";
 import { GameConstants, GameLogic } from "../game";
-import { Rule } from "./RuleEngine";
+import Rules from "./RuleEngine";
 
 namespace PotionRules {
   function potionValue(card: number): number {
@@ -22,34 +22,34 @@ namespace PotionRules {
     };
   }
 
-  export class AllYouCanEat implements Rule {
+  export class AllYouCanEat implements Rules.Rule {
     name = "All You Can Eat";
     static description =
       "Players can drink as many potions as they want in a row.";
     static checks = {
-      canDrink: (state: GameLogic.GameState) => true,
+      [Rules.Determination.canDrink]: (state: GameLogic.GameState) => true,
     };
     static actions = { drinkPotion: applyPotionAsHealing };
   }
 
-  export class SubsequenceImpotence implements Rule {
+  export class SubsequenceImpotence implements Rules.Rule {
     name = "Subsequence Impotence";
     static description =
       "Drinking more than one potion in a row causes has no effect.";
     static checks = {
-      canDrink: (state: GameLogic.GameState) => {
+      [Rules.Determination.canDrink]: (state: GameLogic.GameState) => {
         return !state.wasLastActionPotion;
       },
     };
-    static actions = { drinkPotion: applyPotionAsHealing };
+    static actions = { [Rules.Mutation.drinkPotion]: applyPotionAsHealing };
   }
 
-  export class SubsequenceSickness implements Rule {
+  export class SubsequenceSickness implements Rules.Rule {
     name = "Subsequence Sickness";
     static description =
       "Drinking more than one potion in a row will make you sick and lose health.";
     static checks = {
-      canDrink: (state: GameLogic.GameState) => true,
+      [Rules.Determination.canDrink]: (state: GameLogic.GameState) => true,
     };
     static actions = {
       drinkPotion: (state: GameLogic.GameState) => {
