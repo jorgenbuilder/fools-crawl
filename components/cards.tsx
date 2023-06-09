@@ -42,7 +42,8 @@ export function Card({
   onClick?: (e: ThreeEvent<MouseEvent>) => void;
 }) {
   const ref = useRef<THREE.Group>();
-  const back = useTexture("/back.png");
+  const back = useTexture("/back2.png");
+  const mask = useTexture("/mask.png");
   const front = CardArt.getTexture(card.card.index);
   const { state } = GameMachine.use();
   const { deck } = state.context;
@@ -69,6 +70,8 @@ export function Card({
           attach="material"
           map={back}
           side={THREE.BackSide}
+          alphaMap={mask}
+          transparent={true}
         />
       </mesh>
       <mesh>
@@ -78,6 +81,8 @@ export function Card({
           map={front}
           side={THREE.FrontSide}
           color="white"
+          alphaMap={mask}
+          transparent={true}
         />
       </mesh>
     </group>
