@@ -42,7 +42,7 @@ export interface Typegen0 {
     newGame: "done.invoke.game.GamePlay.Start:invocation[0]";
   };
   missingImplementations: {
-    actions: never;
+    actions: "gameOverHook";
     delays: never;
     guards: never;
     services: never;

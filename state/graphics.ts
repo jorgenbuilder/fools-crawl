@@ -4,6 +4,7 @@ import { CustomEase } from "gsap/dist/CustomEase";
 import { ArchetypeBucket, World as ECS } from "miniplex";
 import { Audio } from "./audio";
 import { TarotDeck } from "./TarotDeck";
+import { GameConstants, GameMachine } from "./game";
 
 gsap.registerPlugin(CustomEase);
 
@@ -126,7 +127,8 @@ export namespace CardLayouts {
   export function InDeck(
     card: GraphicsEntities.Card,
     i: number,
-    portrait: boolean
+    portrait: boolean,
+    deckSize: number
   ) {
     const position = portrait
       ? GraphicsEntities.DefaultVec3.clone().set(
@@ -135,9 +137,13 @@ export namespace CardLayouts {
             GraphicsConstants.CARD_SIZE[0] / 2 +
             GraphicsConstants.SPACING +
             0.5,
-          -i * 0.01
+          deckSize * 0.01 - i * 0.01
         )
-      : GraphicsEntities.DefaultVec3.clone().set(2.8, 0, -i * 0.01);
+      : GraphicsEntities.DefaultVec3.clone().set(
+          2.8,
+          0,
+          deckSize * 0.01 - i * 0.01
+        );
     const rotation = portrait
       ? GraphicsEntities.DefaultEuler.clone().set(
           card.rotation.x,
@@ -327,12 +333,16 @@ export namespace Animation {
 
   // TODO: Deck doesn't animate nicely over time
 
-  export function Escape(cards: GraphicsEntities.Card[], portrait: boolean) {
+  export function Escape(
+    cards: GraphicsEntities.Card[],
+    portrait: boolean,
+    deckSize: number
+  ) {
     const timeline = gsap.timeline();
     const prep = portrait
       ? CardLayouts.RoomGrid(cards[0], 3)
       : CardLayouts.RoomRow(cards[0], 3);
-    const deck = CardLayouts.InDeck(cards[0], 0, portrait);
+    const deck = CardLayouts.InDeck(cards[0], 0, portrait, deckSize);
     timeline
       .add("start")
       .to(
@@ -355,6 +365,7 @@ export namespace Animation {
         },
         "start"
       )
+      .call(() => Audio.PlaySound("slide"))
       .add("deck")
       .to(
         cards.map((card) => card.position),
@@ -496,6 +507,7 @@ export namespace Animation {
     const discard = CardLayouts.InDiscard(card, positionInDiscard, portrait);
     return timeline
       .add("discard")
+      .call(() => Audio.PlaySound("slide"))
       .to(
         card.position,
         {
@@ -523,6 +535,43 @@ export namespace Animation {
         },
         "discard"
       );
+  }
+
+  /** Move all cards in the deck (draw pile) into their correct position. */
+  export function OrganizeDeck(
+    /** A selector on the ECS containing all cards. */
+    cards: GraphicsEntities.Card[],
+    /** Whether the screen is in portrait orientation. */
+    portrait: boolean,
+    /** The number of cards remaining in the deck (draw pile). */
+    deckSize: number
+  ) {
+    const timeline = gsap.timeline();
+    let i = 0;
+    for (const card of cards) {
+      const deck = CardLayouts.InDeck(card, i, portrait, deckSize);
+      timeline.to(
+        card.position,
+        {
+          x: deck.position.x,
+          y: deck.position.y,
+          z: deck.position.z,
+          duration: 0.25,
+        },
+        0
+      );
+      timeline.to(
+        card.rotation,
+        {
+          x: deck.rotation.x,
+          y: deck.rotation.y,
+          z: deck.rotation.z,
+          duration: 0.25,
+        },
+        0
+      );
+      i++;
+    }
   }
 
   /** Makes all of the cards in the deck dance. */
@@ -595,5 +644,53 @@ export namespace Animation {
         y: start.y,
         duration: 0.25,
       });
+  }
+
+  /** Deal cards. */
+  export function Deal(cards: GraphicsEntities.Card[], portrait: boolean) {
+    const timeline = gsap.timeline();
+    let i = 0;
+    for (const card of cards) {
+      const to = portrait
+        ? CardLayouts.RoomGrid(card, i)
+        : CardLayouts.RoomRow(card, i);
+      timeline
+        .to(card.position, {
+          z: card.position.z + 1,
+          duration: 0.25,
+        })
+        .call(() => Audio.PlaySound("pick"))
+        .add("deal")
+        .to(
+          card.position,
+          {
+            x: to.position.x,
+            y: to.position.y,
+            z: to.position.z,
+            duration: 0.25,
+          },
+          "deal"
+        )
+        .to(
+          card.rotation,
+          {
+            x: to.rotation.x,
+            y: to.rotation.y,
+            z: to.rotation.z,
+            duration: 0.25,
+          },
+          "deal"
+        )
+        .call(() => Audio.PlaySound("place"));
+      i++;
+    }
+    // CardLayouts.InDeck(
+    //   gameObj,
+    //   state.context.deck.indexOf(gameObj.card.index),
+    //   portrait
+    // ),
+    // portrait
+    //   ? CardLayouts.RoomGrid(gameObj, i)
+    //   : CardLayouts.RoomRow(gameObj, i)
   }
 }

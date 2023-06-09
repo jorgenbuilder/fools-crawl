@@ -44,6 +44,9 @@ export function Card({
   const ref = useRef<THREE.Group>();
   const back = useTexture("/back.png");
   const front = CardArt.getTexture(card.card.index);
+  const { state } = GameMachine.use();
+  const { deck } = state.context;
+  const i = deck.indexOf(card.card.index);
 
   // Update the card's position and rotation every frame
   useFrame(() => {

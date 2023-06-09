@@ -129,7 +129,6 @@ export namespace GameLogic {
 
   /** If card is a monster, deal damage to the player. */
   export function FightMonster(state: GameState, value: number): GameState {
-    GameEffects.Hooks.FightMonster(state, value);
     if (
       typeof state.lastMonsterBlocked !== "undefined" &&
       state.lastMonsterBlocked <= value
@@ -146,7 +145,6 @@ export namespace GameLogic {
 
   /** If card is a potion, heal the player. */
   export function DrinkPotion(state: GameState): GameState {
-    GameEffects.Hooks.DrinkPotion(state, state.foldingCard);
     if (!rules.canDrink(state)) return state;
     const update = rules.drinkPotion(state);
     return update;
@@ -154,7 +152,6 @@ export namespace GameLogic {
 
   /** If card is a shield, replace the player's shield. */
   export function TakeShield(state: GameState, value: number): GameState {
-    GameEffects.Hooks.TakeShield(state, value);
     return {
       ...state,
       shield: Math.min(11, value),
@@ -320,7 +317,6 @@ export namespace GameMachine {
         assignGameState: assign((_, event) => event.data),
         assignFoldingCard: assign((_, event) => ({ foldingCard: event.index })),
         clearFoldingCard: assign(() => ({ foldingCard: undefined })),
-        gameOverHook: (context) => GameEffects.Hooks.GameOver(context),
       },
       guards: {
         isDungeonComplete: (context) => GameLogic.IsDungeonComplete(context),
@@ -340,24 +336,8 @@ export namespace GameMachine {
  * Namespace responsible for pushing unidirectional updates from the game machine to the ECS (graphics renderer) and audio renderer.
  */
 export namespace GameEffects {
-  // TODO: Add a nice preloader
-  // TODO: Move camera out when game ends (6)
   // TODO: Maybe I should make the game state emit events?
   // TODO: xstate loses state whenever you refresh the page.
-  /** These hooks allow us to push updates to the graphics ECS based on events in the game state. */
-  export namespace Hooks {
-    export function FightMonster(state: GameLogic.GameState, value: number) {
-      // Would be nice if I didn't have to introspect the state here, and if it just published a nice event.
-    }
-
-    export function DrinkPotion(state: GameLogic.GameState, value: number) {}
-
-    export function TakeShield(state: GameLogic.GameState, value: number) {}
-
-    export function GameOver(state: GameLogic.GameState) {}
-
-    export function DealCard(state: GameLogic.GameState) {}
-  }
 
   /** Adds cards to the game world. */
   function addCards() {
@@ -389,19 +369,11 @@ export namespace GameEffects {
 
       // Stack cards in the deck when the game starts.
       if (state.matches("GamePlay.Start")) {
-        for (const card of GraphicsEntities.WithCard.entities) {
-          setTimeout(() => {
-            // Timer because dancing card animation in card component hijacks this
-            Animation.MoveCard(
-              card,
-              CardLayouts.InDeck(
-                card,
-                state.context.deck.indexOf(card.card.index),
-                portrait
-              )
-            );
-          }, 10);
-        }
+        Animation.OrganizeDeck(
+          GraphicsEntities.WithCard.entities,
+          portrait,
+          GraphicsEntities.WithCard.entities.length
+        );
 
         Animation.MoveCamera(GraphicsEntities.WithCamera.entities[0], {
           position: GraphicsEntities.DefaultVec3.clone().set(
@@ -415,24 +387,10 @@ export namespace GameEffects {
 
       // Deal cards at the start of the turn.
       if (state.matches("GamePlay.PlayerTurnStart")) {
-        for (const card of state.context.room) {
-          const i = state.context.room.indexOf(card);
-          const gameObj = GraphicsEntities.WithCard.entities[card];
-          setTimeout(() => {
-            Animation.MoveCardFrom(
-              gameObj,
-              CardLayouts.InDeck(
-                gameObj,
-                state.context.deck.indexOf(gameObj.card.index),
-                portrait
-              ),
-              portrait
-                ? CardLayouts.RoomGrid(gameObj, i)
-                : CardLayouts.RoomRow(gameObj, i)
-            );
-            GameEffects.Hooks.DealCard(state.context);
-          }, 250 * (i + 2));
-        }
+        const cards = state.context.room.map(
+          (i) => GraphicsEntities.WithCard.entities[i]
+        );
+        Animation.Deal(cards, portrait);
       }
 
       // Discard cards when the player folds.
@@ -460,7 +418,11 @@ export namespace GameEffects {
         const cards = state.context.room
           .map((x) => GraphicsEntities.WithCard.entities[x])
           .filter((x) => x !== undefined);
-        Animation.Escape(cards, portrait);
+        const deck = state.context.deck.map(
+          (x) => GraphicsEntities.WithCard.entities[x]
+        );
+        Animation.OrganizeDeck(deck, portrait, state.context.deck.length);
+        Animation.Escape(cards, portrait, state.context.deck.length);
       }
 
       if (state.matches("GamePlay.Win") || state.matches("GamePlay.GameOver")) {
