@@ -280,7 +280,8 @@ export namespace Animation {
   export function MonsterCardAttack(
     card: GraphicsEntities.Card,
     positionInDiscard: number,
-    portrait: boolean
+    portrait: boolean,
+    block: boolean | "break"
   ) {
     const timeline = gsap.timeline();
     return timeline
@@ -297,6 +298,14 @@ export namespace Animation {
       )
       .call(
         () => card.card.suit === "swords" && Audio.PlaySound("slice"),
+        null,
+        0.6
+      )
+      .call(
+        () =>
+          block === "break"
+            ? Audio.PlaySound("damage")
+            : block && Audio.PlaySound("block"),
         null,
         0.6
       )
@@ -371,7 +380,7 @@ export namespace Animation {
       })
       .call(() => {
         if (card.card.suit === "cups") {
-          Audio.PlaySound(fail ? "glug" : "gulp");
+          !fail && Audio.PlaySound("glug");
         } else {
           Audio.PlaySound("shield");
         }

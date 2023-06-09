@@ -131,16 +131,17 @@ export namespace GameLogic {
 
   /** If card is a monster, deal damage to the player. */
   export function FightMonster(state: GameState, value: number): GameState {
+    const update = { ...state };
     if (
-      typeof state.lastMonsterBlocked !== "undefined" &&
-      state.lastMonsterBlocked <= value
+      typeof update.lastMonsterBlocked !== "undefined" &&
+      update.lastMonsterBlocked <= value
     )
-      state.shield = 0;
+      update.shield = 0;
     return {
-      ...state,
-      shield: state.shield,
-      lastMonsterBlocked: value,
-      health: Math.max(0, state.health - Math.max(0, value - state.shield)),
+      ...update,
+      shield: update.shield,
+      lastMonsterBlocked: update.shield === 0 ? undefined : value,
+      health: Math.max(0, update.health - Math.max(0, value - update.shield)),
       wasLastActionPotion: false,
     };
   }
@@ -372,7 +373,7 @@ export namespace GameEffects {
       // Stack cards in the deck when the game starts.
       if (state.matches("GamePlay.Start")) {
         Audio.Stop();
-        Audio.PlaySound("ambience");
+        // Audio.PlaySound("ambience");
         Animation.OrganizeDeck(
           GraphicsEntities.WithCard.entities,
           portrait,
@@ -406,10 +407,16 @@ export namespace GameEffects {
         const card = (state.event as GameMachine.ActionFoldCard).index;
         const gameObj = GraphicsEntities.WithCard.entities[card];
         if (["swords", "wands"].includes(gameObj.card.suit)) {
+          const shieldBreak =
+            typeof state.context.lastMonsterBlocked !== "undefined" &&
+            state.context.lastMonsterBlocked <=
+              TarotDeck.getTarotCard(state.context.foldingCard).value;
+          const shieldBlock = !shieldBreak && state.context.shield > 0;
           Animation.MonsterCardAttack(
             gameObj,
             state.context.discard.length,
-            portrait
+            portrait,
+            shieldBreak ? "break" : shieldBlock
           );
         } else {
           Animation.ItemCardUse(

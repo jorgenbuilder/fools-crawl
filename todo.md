@@ -7,9 +7,16 @@
   - [x] Potions
   - [x] Wands attack
   - [x] Shields
+  - [ ] Shield break
+  - [ ] Unblocked attack
+  - [ ] Atmosphere
 - [ ] Redo sound design
   - [ ] Impact timings
-  - [ ] Indicating key gameplay moments like blocking an attack, breaking a shield, failing to drink a potion
+  - [ ] Make them better xD
+  - [ ] Indicating key gameplay moments
+    - [x] Blocking an attack
+    - [ ] Not blocking an attack
+    - [x] Breaking a shield
 - [ ] Add keyboard + controller input system
 - [ ] Create a tutorial
 - [ ] Create a dialog system

@@ -30,7 +30,7 @@ export namespace Audio {
     whoosh: new Array(5)
       .fill(0)
       .map((_, i) => `/audio/recorded/whoosh${i + 1}.wav`),
-    gulp: new Array(6)
+    gulp: new Array(5)
       .fill(0)
       .map((_, i) => `/audio/recorded/gulp${i + 1}.wav`),
     glug: new Array(4)
@@ -39,9 +39,12 @@ export namespace Audio {
     whack: new Array(5)
       .fill(0)
       .map((_, i) => `/audio/recorded/whack${i + 1}.wav`),
-    shield: new Array(4)
+    shield: new Array(3)
       .fill(0)
       .map((_, i) => `/audio/recorded/shield${i + 1}.wav`),
+    block: new Array(1)
+      .fill(0)
+      .map((_, i) => `/audio/recorded/block${i + 1}.wav`),
   };
 
   export type Sounds = keyof typeof SoundConf;
