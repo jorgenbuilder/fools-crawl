@@ -67,6 +67,9 @@ namespace PotionRules {
       },
     };
   }
+
+  // One potion per room
+  // 5 potions per dungeon
 }
 
 export default PotionRules;

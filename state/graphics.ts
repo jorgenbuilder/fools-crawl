@@ -231,107 +231,6 @@ export namespace Animation {
       duration: 0.5,
     });
   }
-  export function MoveCard(
-    card: GraphicsEntities.Card,
-    to: { position: THREE.Vector3; rotation: THREE.Euler }
-  ) {
-    gsap.to(card.position, {
-      x: to.position.x,
-      y: to.position.y,
-      duration: 0.25,
-    });
-    gsap.to(card.position, {
-      z: to.position.z,
-      duration: 0.125,
-    });
-    gsap.to(card.rotation, {
-      x: to.rotation.x,
-      y: to.rotation.y,
-      z: to.rotation.z,
-      duration: 0.125,
-    });
-  }
-
-  export function SendToDiscard(
-    card: GraphicsEntities.Card,
-    i: number,
-    portrait: boolean
-  ) {
-    const { position, rotation } = CardLayouts.InDiscard(card, i, portrait);
-    gsap
-      .timeline({})
-      .add("start")
-      .to(
-        card.position,
-        {
-          z: card.position.z + 1,
-          duration: 0.2,
-        },
-        "start"
-      )
-      .to(
-        card.position,
-        {
-          x: position.x,
-          y: position.y,
-          z: position.z,
-          duration: 0.2,
-        },
-        "end"
-      )
-      .to(
-        card.position,
-        {
-          x: position.x,
-          y: position.y,
-          duration: 0.4,
-        },
-        "start"
-      );
-  }
-
-  export function MoveCardFrom(
-    card: GraphicsEntities.Card,
-    from: { position: THREE.Vector3; rotation: THREE.Euler },
-    to: { position: THREE.Vector3; rotation: THREE.Euler }
-  ) {
-    gsap
-      .timeline({
-        delay: 0.25,
-      })
-      .call(() => Audio.PlaySound("pick"))
-      .delay(0.5)
-      .call(() => Audio.PlaySound("place"))
-      .to(card.position, {
-        z: from.position.z + 0.5,
-        duration: 0.125,
-      })
-      .add("start")
-      .to(
-        card.position,
-        {
-          x: to.position.x,
-          y: to.position.y,
-          z: to.position.z,
-          duration: 0.25,
-        },
-        "start"
-      )
-      .to(
-        card.rotation,
-        {
-          x: to.rotation.x,
-          y: to.rotation.y,
-          z: to.rotation.z,
-          duration: 0.125,
-        },
-        "start"
-      );
-    // .add("end")
-    // .call(() => Audio.PlaySound("place"));
-  }
-
-  // TODO: Deck doesn't animate nicely over time
 
   export function Escape(
     cards: GraphicsEntities.Card[],
@@ -386,10 +285,8 @@ export namespace Animation {
     const timeline = gsap.timeline();
     return timeline
       .to(card.position, {
-        x: 0,
-        y: 0,
-        z: 2,
-        duration: 0.33,
+        z: 0.5,
+        duration: 0.125,
         ease: "power2.out",
       })
       .add("attack")
@@ -411,7 +308,7 @@ export namespace Animation {
             "custom",
             "M0,0 C0,-0.668 0.634,-0.652 0.634,-0.652 0.634,-0.652 1,1 1,1"
           ),
-          duration: 0.5,
+          duration: 0.25,
         },
         "attack"
       )
@@ -437,10 +334,8 @@ export namespace Animation {
       .to(
         card.position,
         {
-          x: 0,
           y: 0,
-          z: 2,
-          duration: 0.75,
+          duration: 0.125,
         },
         "reset"
       )
@@ -448,7 +343,7 @@ export namespace Animation {
         card.rotation,
         {
           z: 0,
-          duration: 0.5,
+          duration: 0.1,
         },
         "reset"
       )
@@ -464,17 +359,15 @@ export namespace Animation {
     const timeline = gsap.timeline();
     return timeline
       .to(card.position, {
-        x: 0,
-        y: 0,
-        z: 2,
-        duration: 0.33,
+        z: 0.5,
+        duration: 0.125,
         ease: "power2.out",
       })
       .add("use")
       .to(card.position, {
         y: 0.125,
-        z: 2.25,
-        duration: 0.25,
+        z: card.position.z + 0.25,
+        duration: 0.125,
       })
       .call(() => {
         if (card.card.suit === "cups") {
@@ -485,13 +378,12 @@ export namespace Animation {
       })
       .to(card.position, {
         y: 0,
-        z: 2,
-        duration: 0.25,
+        z: card.position.z,
+        duration: 0.125,
       })
       .to(card.position, {
         y: 0,
-        z: 2,
-        duration: 0.5,
+        duration: 0.25,
       })
       .add(() => Discard(card, positionInDiscard, portrait));
   }
@@ -513,7 +405,7 @@ export namespace Animation {
         {
           x: discard.position.x,
           y: discard.position.y,
-          duration: 0.5,
+          duration: 0.125,
         },
         "discard"
       )
@@ -521,7 +413,7 @@ export namespace Animation {
         card.position,
         {
           z: discard.position.z,
-          duration: 0.25,
+          duration: 0.1,
         },
         "discard"
       )
@@ -531,7 +423,7 @@ export namespace Animation {
           x: discard.rotation.x,
           y: discard.rotation.y,
           z: discard.rotation.z,
-          duration: 0.5,
+          duration: 0.125,
         },
         "discard"
       );
@@ -648,7 +540,7 @@ export namespace Animation {
 
   /** Deal cards. */
   export function Deal(cards: GraphicsEntities.Card[], portrait: boolean) {
-    const timeline = gsap.timeline();
+    const timeline = gsap.timeline().delay(0.25);
     let i = 0;
     for (const card of cards) {
       const to = portrait
@@ -657,7 +549,7 @@ export namespace Animation {
       timeline
         .to(card.position, {
           z: card.position.z + 1,
-          duration: 0.25,
+          duration: 0.125,
         })
         .call(() => Audio.PlaySound("pick"))
         .add("deal")
@@ -667,7 +559,7 @@ export namespace Animation {
             x: to.position.x,
             y: to.position.y,
             z: to.position.z,
-            duration: 0.25,
+            duration: 0.125,
           },
           "deal"
         )
@@ -677,7 +569,7 @@ export namespace Animation {
             x: to.rotation.x,
             y: to.rotation.y,
             z: to.rotation.z,
-            duration: 0.25,
+            duration: 0.125,
           },
           "deal"
         )
