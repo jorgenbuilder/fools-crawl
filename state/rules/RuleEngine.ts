@@ -24,12 +24,6 @@ export interface Rule {
   absolute?: boolean;
 }
 
-type RuleEngineMethods = {
-  [K in RuleChecks]: (state: GameLogic.GameState) => boolean;
-} & {
-  [K in RuleActions]: (state: GameLogic.GameState) => GameLogic.GameState;
-};
-
 interface DeterminationLogEntry {
   timestamp: Date;
   state: GameLogic.GameState;
@@ -40,50 +34,42 @@ interface DeterminationLogEntry {
 }
 
 /** Applies a set of rules to make boolean determinations on player actions. */
-export class RuleEngine implements RuleEngineMethods {
+export class RuleEngine {
   private rules: { [name: string]: Rule } = {};
   private log: Map<string, DeterminationLogEntry> = new Map();
 
-  /** Determine whether player can escape the current room. */
-  canEscape: (state: GameLogic.GameState) => boolean = this.makeCheckMethod(
-    RuleChecks.canEscape
-  );
-
-  /** Determine whether the player can drink a potion. */
-  canDrink: (state: GameLogic.GameState) => boolean = this.makeCheckMethod(
-    RuleChecks.canDrink
-  );
-
-  /** Perform the drinkPotion action. */
-  drinkPotion: (state: GameLogic.GameState) => GameLogic.GameState =
-    this.makeActionMethod(RuleActions.drinkPotion);
-
-  /** Create a handler that makes a boolean determination according to applicable rules. */
-  private makeCheckMethod(
-    checkName: RuleChecks
-  ): (state: GameLogic.GameState) => boolean {
-    return (state: GameLogic.GameState) => {
-      let determination = false;
-      const determiningRules: [string, boolean][] = [];
-      for (let rule of Object.values(this.rules).filter(
-        (rule) => rule.checks?.[checkName]
-      )) {
-        const result = rule.checks[checkName](state);
-        determiningRules.push([rule.name, result]);
-        if (rule.absolute) {
-          determination = result;
-          break;
-        }
-        determination = determination || result;
+  /** Make a boolean determination given a rule name and a game state. */
+  determine(state: GameLogic.GameState, ruleName: RuleChecks): boolean {
+    let determination = false;
+    const determiningRules: [string, boolean][] = [];
+    for (let rule of Object.values(this.rules).filter(
+      (rule) => rule.checks?.[ruleName]
+    )) {
+      const result = rule.checks[ruleName](state);
+      determiningRules.push([rule.name, result]);
+      if (rule.absolute) {
+        determination = result;
+        break;
       }
-      this.logRuleDetermination(
-        checkName,
-        state,
-        determination,
-        determiningRules
-      );
-      return determination;
-    };
+      determination = determination || result;
+    }
+    this.logRuleDetermination(ruleName, state, determination, determiningRules);
+    return determination;
+  }
+
+  /** Return a new game state given an input game state and the action name to apply. */
+  mutate(
+    state: GameLogic.GameState,
+    actionName: RuleActions
+  ): GameLogic.GameState {
+    let update = state;
+    for (let rule of Object.values(this.rules).filter(
+      (rule) => rule.actions?.[actionName]
+    )) {
+      update = rule.actions[actionName](state);
+    }
+
+    return update;
   }
 
   /** Record a rule determination to the log. */
@@ -106,22 +92,6 @@ export class RuleEngine implements RuleEngineMethods {
         allRules: Object.keys(this.rules),
       });
     }
-  }
-
-  /** Create a handler that mutates game state according to applicable rules. */
-  private makeActionMethod(
-    actionName: RuleActions
-  ): (state: GameLogic.GameState) => GameLogic.GameState {
-    return (state: GameLogic.GameState) => {
-      let update = state;
-      for (let rule of Object.values(this.rules).filter(
-        (rule) => rule.actions?.[actionName]
-      )) {
-        update = rule.actions[actionName](state);
-      }
-
-      return update;
-    };
   }
 
   registerRule(rule: Rule): void {

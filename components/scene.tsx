@@ -22,7 +22,8 @@ const Scene = () => {
   const { portrait } = useArbitraryStore();
   useFrame(({ clock: { elapsedTime } }) => {
     if (!lights.current[0]) return;
-    lights.current[0].intensity = Math.sin(elapsedTime) * 0.5 + 1;
+    lights.current[0].intensity =
+      Math.sin(elapsedTime * 10) * 0.1 * Math.random() + 1;
     lights.current[1].intensity = Math.sin(elapsedTime + Math.PI / 4) * 0.5 + 1;
   });
   return (

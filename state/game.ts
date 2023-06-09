@@ -29,6 +29,7 @@ import { useArbitraryStore } from "./zustand";
 import { TarotDeck } from "./TarotDeck";
 import { rules } from "./rules";
 import { Audio } from "./audio";
+import { RuleActions, RuleChecks } from "./rules/RuleEngine";
 
 export namespace GameConstants {
   /** Number of cards in the deck. */
@@ -146,8 +147,8 @@ export namespace GameLogic {
 
   /** If card is a potion, heal the player. */
   export function DrinkPotion(state: GameState): GameState {
-    if (!rules.canDrink(state)) return state;
-    const update = rules.drinkPotion(state);
+    if (!rules.determine(state, RuleChecks.canDrink)) return state;
+    const update = rules.mutate(state, RuleActions.drinkPotion);
     return update;
   }
 
@@ -178,7 +179,7 @@ export namespace GameLogic {
 
   /** Determines whether the player can escape the current room based on game state and rules. */
   export function IsRoomEscapable(state: GameState): boolean {
-    return rules.canEscape(state);
+    return rules.determine(state, RuleChecks.canEscape);
   }
 
   /** Determines whether the player has completed the room based on game state. */
