@@ -3,39 +3,39 @@ import { GameLogic } from "../game";
 import Rules from "./RuleEngine";
 
 namespace EscapeRules {
-  export class Never implements Rules.Rule {
-    name = "No Escape";
-    static absolute = true;
-    static description = "Player can never escape a room.";
-    static checks = {
+  export const Never: Rules.Rule = {
+    name: "No Escape",
+    absolute: true,
+    description: "Player can never escape a room.",
+    checks: {
       [Rules.Determination.canEscape]: (state: GameLogic.GameState) => false,
-    };
-  }
+    },
+  };
 
-  export class Always implements Rules.Rule {
-    name = "Always Escape";
-    static absolute = true;
-    static description = "Player can always escape a room.";
-    static checks = {
+  export const Always: Rules.Rule = {
+    name: "Always Escape",
+    absolute: true,
+    description: "Player can always escape a room.",
+    checks: {
       [Rules.Determination.canEscape]: (state: GameLogic.GameState) => true,
-    };
-  }
+    },
+  };
 
-  export class SingleRoom implements Rules.Rule {
-    name = "Single Room Escape";
-    static description =
-      "Player can escape a room so long as they didn't escape the last room they were in.";
-    static checks = {
+  export const SingleRoom: Rules.Rule = {
+    name: "Single Room",
+    description:
+      "Player can escape a room so long as they didn't escape the last room they were in.",
+    checks: {
       [Rules.Determination.canEscape]: (state: GameLogic.GameState) =>
         !state.didEscapeLastRoom,
-    };
-  }
+    },
+  };
 
-  export class NoEnemies implements Rules.Rule {
-    name = "No Enemies Escape";
-    static description =
-      "Player can escape a room so long as there are no enemies in the room.";
-    static checks = {
+  export const NoEnemies: Rules.Rule = {
+    name: "No Enemies",
+    description:
+      "Player can escape a room so long as there are no enemies in the room.",
+    checks: {
       [Rules.Determination.canEscape]: (state: GameLogic.GameState) => {
         return (
           state.room
@@ -45,14 +45,14 @@ namespace EscapeRules {
             ) === undefined
         );
       },
-    };
-  }
+    },
+  };
 
-  export class OneEnemy implements Rules.Rule {
-    name = "One Enemy Escape";
-    static description =
-      "Player can escape a room so long as there is one or fewer enemies in the room.";
-    static checks = {
+  export const OneEnemy: Rules.Rule = {
+    name: "One Enemy",
+    description:
+      "Player can escape a room so long as there is one or fewer enemies in the room.",
+    checks: {
       [Rules.Determination.canEscape]: (state: GameLogic.GameState) => {
         return (
           state.room
@@ -62,8 +62,8 @@ namespace EscapeRules {
             ).length <= 1
         );
       },
-    };
-  }
+    },
+  };
 }
 
 export default EscapeRules;

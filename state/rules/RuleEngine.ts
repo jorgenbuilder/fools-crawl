@@ -15,6 +15,7 @@ namespace Rules {
 
   /** A rule implements a method for one or more of our checks. */
   export interface Rule {
+    // TODO: It's possible that these names will collide, causing a rule to be overwritten.
     name: string;
     description?: string;
     checks?: {

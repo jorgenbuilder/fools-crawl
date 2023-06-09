@@ -22,36 +22,34 @@ namespace PotionRules {
     };
   }
 
-  export class AllYouCanEat implements Rules.Rule {
-    name = "All You Can Eat";
-    static description =
-      "Players can drink as many potions as they want in a row.";
-    static checks = {
+  export const AllYouCanEat: Rules.Rule = {
+    name: "All You Can Eat",
+    description: "Players can drink as many potions as they want in a row.",
+    checks: {
       [Rules.Determination.canDrink]: (state: GameLogic.GameState) => true,
-    };
-    static actions = { drinkPotion: applyPotionAsHealing };
-  }
+    },
+    actions: { drinkPotion: applyPotionAsHealing },
+  };
 
-  export class SubsequenceImpotence implements Rules.Rule {
-    name = "Subsequence Impotence";
-    static description =
-      "Drinking more than one potion in a row causes has no effect.";
-    static checks = {
+  export const SubsequenceImpotence: Rules.Rule = {
+    name: "Subsequence Impotence",
+    description: "Drinking more than one potion in a row causes has no effect.",
+    checks: {
       [Rules.Determination.canDrink]: (state: GameLogic.GameState) => {
         return !state.wasLastActionPotion;
       },
-    };
-    static actions = { [Rules.Mutation.drinkPotion]: applyPotionAsHealing };
-  }
+    },
+    actions: { [Rules.Mutation.drinkPotion]: applyPotionAsHealing },
+  };
 
-  export class SubsequenceSickness implements Rules.Rule {
-    name = "Subsequence Sickness";
-    static description =
-      "Drinking more than one potion in a row will make you sick and lose health.";
-    static checks = {
+  export const SubsequenceSickness: Rules.Rule = {
+    name: "Subsequence Sickness",
+    description:
+      "Drinking more than one potion in a row will make you sick and lose health.",
+    checks: {
       [Rules.Determination.canDrink]: (state: GameLogic.GameState) => true,
-    };
-    static actions = {
+    },
+    actions: {
       drinkPotion: (state: GameLogic.GameState) => {
         if (!state.wasLastActionPotion) {
           return applyPotionAsHealing(state);
@@ -65,8 +63,8 @@ namespace PotionRules {
           };
         }
       },
-    };
-  }
+    },
+  };
 
   // One potion per room
   // 5 potions per dungeon

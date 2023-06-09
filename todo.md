@@ -2,6 +2,11 @@
 - [x] Create a preloader
 - [x] Create a rule set system that allows me to change the rules of the game arbitrarily between dungeons, during development, etc.
 - [x] Cook up a vibe
+- [x] Rules aren't applied properly in prod
+- [ ] Record sounds
+  - [ ] Potions
+  - [ ] Wands attack
+  - [ ] Shields
 - [ ] Add keyboard + controller input system
 - [ ] Create a tutorial
 - [ ] Create a dialog system
@@ -11,3 +16,4 @@
 - [ ] Fix the deck pile animation
 - [ ] Implement different views like Inscryption
 - [ ] Setup automatic card animations based on pile positions, so you can just add cards to a pile in game state
+- [ ]
