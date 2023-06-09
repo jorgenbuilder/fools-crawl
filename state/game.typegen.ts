@@ -48,12 +48,14 @@ export interface Typegen0 {
     services: never;
   };
   eventsCausingActions: {
+    assignFoldingCard: "FOLD_CARD";
     assignGameState:
       | "done.invoke.game.GamePlay.ClearRoom:invocation[0]"
       | "done.invoke.game.GamePlay.Deal:invocation[0]"
       | "done.invoke.game.GamePlay.Escape:invocation[0]"
       | "done.invoke.game.GamePlay.FoldCard:invocation[0]"
       | "done.invoke.game.GamePlay.Start:invocation[0]";
+    clearFoldingCard: "done.invoke.game.GamePlay.FoldCard:invocation[0]";
     gameOverHook: "";
   };
   eventsCausingDelays: {};

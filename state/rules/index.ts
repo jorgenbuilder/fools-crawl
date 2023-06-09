@@ -13,6 +13,11 @@ export const developmentRules: Rule[] = [
   PotionRules.AllYouCanEat,
 ];
 
+export const hardRules: Rule[] = [
+  EscapeRules.NoEnemies,
+  PotionRules.SubsequenceSickness,
+];
+
 export const rules = new RuleEngine();
 rules.applyRuleSet(standardRules);
 
@@ -20,5 +25,9 @@ if (typeof window !== "undefined") {
   (window as any).rules = rules;
   (window as any).developmentRules = () => {
     rules.applyRuleSet(developmentRules);
+  };
+  (window as any).hardRules = () => {
+    rules.resetRules();
+    rules.applyRuleSet(hardRules);
   };
 }

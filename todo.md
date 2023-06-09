@@ -9,4 +9,5 @@
 - [ ] Add a rewind mechanic (let send the player back a few turns)
 - [ ] Fix the deck pile animation
 - [ ] Cook up a vibe
-- [ ]
+- [ ] Implement different views like Inscryption
+- [ ] Setup automatic card animations based on pile positions, so you can just add cards to a pile in game state

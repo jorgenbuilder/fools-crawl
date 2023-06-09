@@ -26,7 +26,6 @@ import xstate from "zustand-middleware-xstate";
 import type { Store } from "zustand-middleware-xstate";
 import { Animation, CardLayouts, GraphicsEntities } from "./graphics";
 import { useArbitraryStore } from "./zustand";
-import { Audio } from "./audio";
 import { TarotDeck } from "./TarotDeck";
 import { rules } from "./rules";
 
@@ -55,6 +54,8 @@ export namespace GameLogic {
     lastMonsterBlocked?: number;
     /** Whether the player escaped the last room they were in. */
     didEscapeLastRoom: boolean;
+    /** The card currently being folded by the player. */
+    foldingCard?: number;
   }
 
   /** Return a new object holding the default state of a new game. */
@@ -113,7 +114,7 @@ export namespace GameLogic {
         update = monster(state, value);
         break;
       case "cups":
-        update = potion(state, value);
+        update = potion(state);
         break;
       case "pentacles":
         update = shield(state, value);
@@ -144,17 +145,11 @@ export namespace GameLogic {
   }
 
   /** If card is a potion, heal the player. */
-  export function DrinkPotion(state: GameState, value: number): GameState {
-    GameEffects.Hooks.DrinkPotion(state, value);
+  export function DrinkPotion(state: GameState): GameState {
+    GameEffects.Hooks.DrinkPotion(state, state.foldingCard);
     if (!rules.canDrink(state)) return state;
-    return {
-      ...state,
-      health: (state.health += Math.min(
-        Math.min(11, value),
-        GameConstants.MAX_HEALTH - state.health
-      )),
-      wasLastActionPotion: true,
-    };
+    const update = rules.drinkPotion(state);
+    return update;
   }
 
   /** If card is a shield, replace the player's shield. */
@@ -261,14 +256,21 @@ export namespace GameMachine {
             },
             PlayerTurn: {
               on: {
-                FOLD_CARD: { cond: "isCardInRoom", target: "FoldCard" },
+                FOLD_CARD: {
+                  cond: "isCardInRoom",
+                  target: "FoldCard",
+                  actions: "assignFoldingCard",
+                },
                 ESCAPE: { cond: "isRoomEscapable", target: "Escape" },
               },
             },
             FoldCard: {
               invoke: {
                 src: "foldCard",
-                onDone: { actions: "assignGameState", target: "EndTurn" },
+                onDone: {
+                  actions: ["assignGameState", "clearFoldingCard"],
+                  target: "EndTurn",
+                },
               },
             },
             Escape: {
@@ -316,6 +318,8 @@ export namespace GameMachine {
       },
       actions: {
         assignGameState: assign((_, event) => event.data),
+        assignFoldingCard: assign((_, event) => ({ foldingCard: event.index })),
+        clearFoldingCard: assign(() => ({ foldingCard: undefined })),
         gameOverHook: (context) => GameEffects.Hooks.GameOver(context),
       },
       guards: {

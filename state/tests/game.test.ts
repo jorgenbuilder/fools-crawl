@@ -1,6 +1,8 @@
+import { after } from "xstate/lib/actions";
 import { GameConstants, GameLogic } from "../game";
 import { rules, standardRules } from "../rules";
 import EscapeRules from "../rules/EscapeRules";
+import PotionRules from "../rules/PotionRules";
 
 namespace TestSuites {
   /** Ensure that the new game state is setup correctly. */
@@ -57,6 +59,7 @@ namespace TestSuites {
       });
       it("Should move the card from the room to the discard pile", () => {
         const card = state.room[0];
+        state.foldingCard = card;
         const update = GameLogic.FoldCard(state, card);
         expect(update.discard).toContain(card);
         expect(update.room).not.toContain(card);
@@ -144,7 +147,7 @@ namespace TestSuites {
   }
 
   export function DrinkingPotions(state = GameLogic.DefaultGameState()) {
-    describe("Drinking potions", () => {
+    describe("Default potion rules", () => {
       let game = { ...state };
       beforeEach(() => {
         game = { ...state };
@@ -152,24 +155,117 @@ namespace TestSuites {
 
       it("Should increase player health", () => {
         game.health = 10;
-        const update = GameLogic.DrinkPotion(game, 1);
+        game.foldingCard = 42; // ace of cups
+        expect(rules.canDrink(game)).toBe(true);
+        const update = GameLogic.DrinkPotion(game);
         expect(update.health).toBe(11);
         expect(update.wasLastActionPotion).toBe(true);
       });
 
       it("Should not increase health above max", () => {
-        const update = GameLogic.DrinkPotion(game, 1);
+        game.foldingCard = 42; // ace of cups
+        const update = GameLogic.DrinkPotion(game);
         expect(update.health).toBe(GameConstants.MAX_HEALTH);
       });
 
       it("Should not increase health when drinking multiple potions in a row", () => {
         game.health = 10;
-        const update = GameLogic.DrinkPotion(game, 1);
+        game.foldingCard = 42; // ace of cups
+        const update = GameLogic.DrinkPotion(game);
         expect(update.health).toBe(11);
         expect(update.wasLastActionPotion).toBe(true);
-        const update2 = GameLogic.DrinkPotion(update, 1);
+        expect(rules.canDrink(update)).toBe(false);
+        const update2 = GameLogic.DrinkPotion(update);
         expect(update2.health).toBe(11);
         expect(update2.wasLastActionPotion).toBe(true);
+      });
+    });
+
+    describe("All you can eat rules", () => {
+      let game = { ...state };
+
+      beforeEach(() => {
+        game = { ...state };
+      });
+
+      beforeAll(() => {
+        rules.removeRule(PotionRules.SubsequenceImpotence);
+        rules.registerRule(PotionRules.AllYouCanEat);
+      });
+
+      afterAll(() => {
+        rules.resetRules();
+        rules.applyRuleSet(standardRules);
+      });
+
+      it("Should increase player health", () => {
+        game.health = 10;
+        game.foldingCard = 42; // ace of cups
+        rules.canDrink(game);
+        expect(rules.canDrink(game)).toBe(true);
+        const update = GameLogic.DrinkPotion(game);
+        expect(rules.canDrink(update)).toBe(true);
+        expect(update.health).toBe(11);
+        expect(update.wasLastActionPotion).toBe(true);
+      });
+
+      it("Should not increase health above max", () => {
+        game.foldingCard = 42; // ace of cups
+        const update = GameLogic.DrinkPotion(game);
+        expect(update.health).toBe(GameConstants.MAX_HEALTH);
+      });
+
+      it("Should increase player health, even in sequence", () => {
+        game.health = 10;
+        game.foldingCard = 42; // ace of cups
+        let update = GameLogic.DrinkPotion(game);
+        expect(update.health).toBe(11);
+        expect(update.wasLastActionPotion).toBe(true);
+        expect(rules.canDrink(update)).toBe(true);
+        update = GameLogic.DrinkPotion(update);
+        expect(update.health).toBe(12);
+        expect(update.wasLastActionPotion).toBe(true);
+      });
+    });
+
+    describe("Subsequence sickness rules", () => {
+      let game = { ...state };
+
+      beforeEach(() => {
+        game = { ...state };
+      });
+
+      beforeAll(() => {
+        rules.removeRule(PotionRules.SubsequenceImpotence);
+        rules.registerRule(PotionRules.SubsequenceSickness);
+      });
+
+      afterAll(() => {
+        rules.resetRules();
+        rules.applyRuleSet(standardRules);
+      });
+
+      it("Should increase player health", () => {
+        game.health = 10;
+        game.foldingCard = 42; // ace of cups
+        rules.canDrink(game);
+        expect(rules.canDrink(game)).toBe(true);
+        const update = GameLogic.DrinkPotion(game);
+        expect(rules.canDrink(update)).toBe(true);
+        expect(update.health).toBe(11);
+        expect(update.wasLastActionPotion).toBe(true);
+      });
+
+      it("Should decrease player health when drinking in sequence", () => {
+        game.health = 10;
+        game.foldingCard = 42; // ace of cups
+        let update = GameLogic.DrinkPotion(game);
+        expect(update.health).toBe(11);
+        expect(update.wasLastActionPotion).toBe(true);
+        expect(rules.canDrink(update)).toBe(true);
+        update = GameLogic.DrinkPotion(update);
+        expect(update.health).toBe(10);
+        expect(update.wasLastActionPotion).toBe(true);
       });
     });
   }

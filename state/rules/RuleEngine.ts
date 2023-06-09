@@ -7,17 +7,27 @@ export enum RuleChecks {
   canDrink = "canDrink",
 }
 
+/** List of actions that can be made by our rule engine. */
+export enum RuleActions {
+  drinkPotion = "drinkPotion",
+}
+
 /** A rule implements a method for one or more of our checks. */
 export interface Rule {
   name: string;
   description?: string;
   checks?: { [key in RuleChecks]?: (state: GameLogic.GameState) => boolean };
+  actions?: {
+    [key in RuleActions]?: (state: GameLogic.GameState) => GameLogic.GameState;
+  };
   /** Cause the rule check to ignore subsequent rules. */
   absolute?: boolean;
 }
 
 type RuleEngineMethods = {
   [K in RuleChecks]: (state: GameLogic.GameState) => boolean;
+} & {
+  [K in RuleActions]: (state: GameLogic.GameState) => GameLogic.GameState;
 };
 
 interface DeterminationLogEntry {
@@ -26,6 +36,7 @@ interface DeterminationLogEntry {
   check: RuleChecks;
   determination: boolean;
   rules: [string, boolean][];
+  allRules: string[];
 }
 
 /** Applies a set of rules to make boolean determinations on player actions. */
@@ -43,6 +54,11 @@ export class RuleEngine implements RuleEngineMethods {
     RuleChecks.canDrink
   );
 
+  /** Perform the drinkPotion action. */
+  drinkPotion: (state: GameLogic.GameState) => GameLogic.GameState =
+    this.makeActionMethod(RuleActions.drinkPotion);
+
+  /** Create a handler that makes a boolean determination according to applicable rules. */
   private makeCheckMethod(
     checkName: RuleChecks
   ): (state: GameLogic.GameState) => boolean {
@@ -60,19 +76,51 @@ export class RuleEngine implements RuleEngineMethods {
         }
         determination = determination || result;
       }
-      const logKey = createHash("sha1")
-        .update(JSON.stringify([checkName, state]))
-        .digest("base64");
-      if (!this.log.has(logKey)) {
-        this.log.set(logKey, {
-          timestamp: new Date(),
-          state,
-          check: checkName,
-          determination,
-          rules: determiningRules,
-        });
-      }
+      this.logRuleDetermination(
+        checkName,
+        state,
+        determination,
+        determiningRules
+      );
       return determination;
+    };
+  }
+
+  /** Record a rule determination to the log. */
+  private logRuleDetermination(
+    checkName: RuleChecks,
+    state: GameLogic.GameState,
+    determination: boolean,
+    determiningRules: [string, boolean][]
+  ): void {
+    const logKey = createHash("sha1")
+      .update(JSON.stringify([checkName, state]))
+      .digest("base64");
+    if (!this.log.has(logKey)) {
+      this.log.set(logKey, {
+        timestamp: new Date(),
+        state,
+        check: checkName,
+        determination,
+        rules: determiningRules,
+        allRules: Object.keys(this.rules),
+      });
+    }
+  }
+
+  /** Create a handler that mutates game state according to applicable rules. */
+  private makeActionMethod(
+    actionName: RuleActions
+  ): (state: GameLogic.GameState) => GameLogic.GameState {
+    return (state: GameLogic.GameState) => {
+      let update = state;
+      for (let rule of Object.values(this.rules).filter(
+        (rule) => rule.actions?.[actionName]
+      )) {
+        update = rule.actions[actionName](state);
+      }
+
+      return update;
     };
   }
 
@@ -80,8 +128,8 @@ export class RuleEngine implements RuleEngineMethods {
     this.rules[rule.name] = rule;
   }
 
-  removeRule(ruleName: string): void {
-    delete this.rules[ruleName];
+  removeRule(rule: Rule): void {
+    delete this.rules[rule.name];
   }
 
   applyRuleSet(ruleSet: Rule[]): void {
