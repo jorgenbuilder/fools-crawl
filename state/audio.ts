@@ -8,6 +8,7 @@ export namespace Audio {
     shield: "/audio/8bit-pickup6.wav",
     deal: "/audio/8bit-blip10.wav",
     lose: "/audio/8bit-explode7.wav",
+    ambience: "/audio/ambience.mp3",
     damage: new Array(5)
       .fill(0)
       .map((_, i) => `/audio/8bit-damage${i + 6}.wav`),
@@ -50,6 +51,18 @@ export namespace Audio {
       const index = Math.floor(Math.random() * buffer.length);
       buffer[index].play();
     }
+  }
+
+  export function Stop() {
+    SoundBuffers.forEach((buffer) => {
+      if (buffer instanceof Howl) {
+        buffer.stop();
+      } else {
+        for (const b of buffer) {
+          b.stop();
+        }
+      }
+    });
   }
 
   init();

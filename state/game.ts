@@ -28,6 +28,7 @@ import { Animation, CardLayouts, GraphicsEntities } from "./graphics";
 import { useArbitraryStore } from "./zustand";
 import { TarotDeck } from "./TarotDeck";
 import { rules } from "./rules";
+import { Audio } from "./audio";
 
 export namespace GameConstants {
   /** Number of cards in the deck. */
@@ -369,6 +370,8 @@ export namespace GameEffects {
 
       // Stack cards in the deck when the game starts.
       if (state.matches("GamePlay.Start")) {
+        Audio.Stop();
+        Audio.PlaySound("ambience");
         Animation.OrganizeDeck(
           GraphicsEntities.WithCard.entities,
           portrait,
@@ -390,7 +393,11 @@ export namespace GameEffects {
         const cards = state.context.room.map(
           (i) => GraphicsEntities.WithCard.entities[i]
         );
+        const deck = state.context.deck.map(
+          (x) => GraphicsEntities.WithCard.entities[x]
+        );
         Animation.Deal(cards, portrait);
+        Animation.OrganizeDeck(deck, portrait, state.context.deck.length);
       }
 
       // Discard cards when the player folds.
