@@ -3,10 +3,13 @@
 - [x] Create a rule set system that allows me to change the rules of the game arbitrarily between dungeons, during development, etc.
 - [x] Cook up a vibe
 - [x] Rules aren't applied properly in prod
-- [ ] Record sounds
-  - [ ] Potions
-  - [ ] Wands attack
-  - [ ] Shields
+- [x] Record sounds
+  - [x] Potions
+  - [x] Wands attack
+  - [x] Shields
+- [ ] Redo sound design
+  - [ ] Impact timings
+  - [ ] Indicating key gameplay moments like blocking an attack, breaking a shield, failing to drink a potion
 - [ ] Add keyboard + controller input system
 - [ ] Create a tutorial
 - [ ] Create a dialog system

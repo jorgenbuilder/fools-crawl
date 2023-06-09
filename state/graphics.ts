@@ -328,7 +328,7 @@ export namespace Animation {
           GraphicsEntities.WithCamera,
           Math.max(card.card.value, 0) / 10
         );
-        card.card.suit === "wands" && Audio.PlaySound("damage");
+        card.card.suit === "wands" && Audio.PlaySound("whack");
       })
       .add("reset")
       .to(
@@ -371,7 +371,7 @@ export namespace Animation {
       })
       .call(() => {
         if (card.card.suit === "cups") {
-          Audio.PlaySound(fail ? "fail" : "potion");
+          Audio.PlaySound(fail ? "glug" : "gulp");
         } else {
           Audio.PlaySound("shield");
         }

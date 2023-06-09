@@ -5,21 +5,43 @@ export namespace Audio {
   const SoundConf = {
     potion: "/audio/8bit-powerup7.wav",
     fail: "/audio/8bit-shoot6.wav",
-    shield: "/audio/8bit-pickup6.wav",
+    // shield: "/audio/8bit-pickup6.wav",
     deal: "/audio/8bit-blip10.wav",
     lose: "/audio/8bit-explode7.wav",
     ambience: "/audio/ambience.mp3",
     damage: new Array(5)
       .fill(0)
       .map((_, i) => `/audio/8bit-damage${i + 6}.wav`),
-    pick: new Array(6).fill(0).map((_, i) => `/audio/cards/pick${i + 1}.wav`),
-    place: new Array(6).fill(0).map((_, i) => `/audio/cards/place${i + 1}.wav`),
-    slice: new Array(4).fill(0).map((_, i) => `/audio/cards/slice${i + 1}.wav`),
-    slide: new Array(9).fill(0).map((_, i) => `/audio/cards/slide${i + 1}.wav`),
-    whip: new Array(5).fill(0).map((_, i) => `/audio/cards/whip${i + 1}.wav`),
+    pick: new Array(6)
+      .fill(0)
+      .map((_, i) => `/audio/recorded/pick${i + 1}.wav`),
+    place: new Array(6)
+      .fill(0)
+      .map((_, i) => `/audio/recorded/place${i + 1}.wav`),
+    slice: new Array(4)
+      .fill(0)
+      .map((_, i) => `/audio/recorded/slice${i + 1}.wav`),
+    slide: new Array(9)
+      .fill(0)
+      .map((_, i) => `/audio/recorded/slide${i + 1}.wav`),
+    whip: new Array(5)
+      .fill(0)
+      .map((_, i) => `/audio/recorded/whip${i + 1}.wav`),
     whoosh: new Array(5)
       .fill(0)
-      .map((_, i) => `/audio/cards/whoosh${i + 1}.wav`),
+      .map((_, i) => `/audio/recorded/whoosh${i + 1}.wav`),
+    gulp: new Array(6)
+      .fill(0)
+      .map((_, i) => `/audio/recorded/gulp${i + 1}.wav`),
+    glug: new Array(4)
+      .fill(0)
+      .map((_, i) => `/audio/recorded/glug${i + 1}.wav`),
+    whack: new Array(5)
+      .fill(0)
+      .map((_, i) => `/audio/recorded/whack${i + 1}.wav`),
+    shield: new Array(4)
+      .fill(0)
+      .map((_, i) => `/audio/recorded/shield${i + 1}.wav`),
   };
 
   export type Sounds = keyof typeof SoundConf;
