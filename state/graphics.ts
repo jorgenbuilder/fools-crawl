@@ -28,6 +28,7 @@ export namespace GraphicsEntities {
   /** A Graphics card in the game. */
   export type Card = {
     card: TarotDeck.TarotCard;
+    geometry: THREE.PlaneGeometry;
   } & PositionComponent &
     RotationComponent &
     DestinationComponent;
@@ -57,6 +58,8 @@ export namespace GraphicsEntities {
     DestinationComponent & PositionComponent & RotationComponent
   >("destination", "position", "rotation");
   export const WithCamera = World.with<Camera>("camera");
+
+  export const CardGeometry = new THREE.PlaneGeometry(1, 1.73, 10, 1);
 }
 
 export namespace GraphicsSystems {
@@ -194,6 +197,7 @@ export namespace CardLayouts {
   /** A default position for a card. */
   export function DefaultCard(): Omit<GraphicsEntities.Card, "card"> {
     return {
+      geometry: GraphicsEntities.CardGeometry.clone(),
       position: GraphicsEntities.DefaultVec3.clone(),
       rotation: GraphicsEntities.DefaultEuler.clone().set(0, Math.PI, 0), // face down
       destination: {
@@ -263,7 +267,7 @@ export namespace Animation {
           duration: 0.125,
         },
         "start"
-      )
+    )
       .call(() => Audio.PlaySound("slide"))
       .add("deck")
       .to(
@@ -274,7 +278,8 @@ export namespace Animation {
           z: 0,
         },
         "deck"
-      );
+    );
+    return timeline;
   }
 
   export function MonsterCardAttack(
@@ -473,6 +478,7 @@ export namespace Animation {
       );
       i++;
     }
+    return timeline
   }
 
   /** Makes all of the cards in the deck dance. */
@@ -551,15 +557,28 @@ export namespace Animation {
   export function Deal(cards: GraphicsEntities.Card[], portrait: boolean) {
     const timeline = gsap.timeline().delay(0.25);
     let i = 0;
+    const state = { angle: 0 };
+    const geometry = GraphicsEntities.CardGeometry.clone();
     for (const card of cards) {
       const to = portrait
         ? CardLayouts.RoomGrid(card, i)
         : CardLayouts.RoomRow(card, i);
       timeline
+        .add("lift")
         .to(card.position, {
           z: card.position.z + 1,
           duration: 0.125,
-        })
+        }, "lift")
+        .to(state, {
+          angle: 5,
+          duration: 0.125,
+          onUpdate: () => {
+            card.geometry = geometry.clone();
+            const buffer = card.geometry.attributes.position as THREE.BufferAttribute;
+            bend(buffer, state.angle, "right");
+            buffer.needsUpdate = true;
+          }
+        }, "lift")
         .call(() => Audio.PlaySound("pick"))
         .add("deal")
         .to(
@@ -581,20 +600,24 @@ export namespace Animation {
             duration: 0.125,
           },
           "deal"
-        )
+      )
+      .to(state, {
+        angle: 0,
+        duration: 0.25,
+        onUpdate: () => {
+          card.geometry = geometry.clone();
+          const buffer = card.geometry.attributes.position as THREE.BufferAttribute;
+          bend(buffer, state.angle, "right");
+          buffer.needsUpdate = true;
+        }
+      }, "deal")
         .call(() => Audio.PlaySound("place"));
       i++;
     }
-    // CardLayouts.InDeck(
-    //   gameObj,
-    //   state.context.deck.indexOf(gameObj.card.index),
-    //   portrait
-    // ),
-    // portrait
-    //   ? CardLayouts.RoomGrid(gameObj, i)
-    //   : CardLayouts.RoomRow(gameObj, i)
+    return timeline;
   }
-  function bend(
+
+function bend(
   buffer: THREE.BufferAttribute,
   angle: number,
   side: "both" | "left" | "right" = "right"
@@ -627,7 +650,7 @@ export namespace Animation {
   duration: number
 ) {
   const state = { angle: startAngle };
-  const geometry = new THREE.PlaneGeometry(1, 2, 5, 1);
+  const geometry = GraphicsEntities.CardGeometry.clone();
   return gsap.to(state, {
     angle: endAngle,
     duration: duration,

@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import { ThreeEvent, useFrame } from "@react-three/fiber";
 import { useTexture } from "@react-three/drei";
 import { GameMachine } from "../state/game";
@@ -49,9 +49,13 @@ export function Card({
   const { deck } = state.context;
   const i = deck.indexOf(card.card.index);
 
+  const geometry = useRef(GraphicsEntities.CardGeometry.clone());
+
   // Update the card's position and rotation every frame
   useFrame(() => {
     if (!ref.current) return;
+    geometry.current.attributes.position = card.geometry.attributes.position;
+    geometry.current.attributes.position.needsUpdate = true;
     ref.current.rotation.copy(card.rotation);
     ref.current.position.copy(card.position);
   });
@@ -64,8 +68,7 @@ export function Card({
       }}
       onClick={onClick}
     >
-      <mesh>
-        <planeGeometry attach="geometry" args={[1, 1.73]} />
+      <mesh geometry={geometry.current}>
         <meshStandardMaterial
           attach="material"
           map={back}
@@ -74,8 +77,7 @@ export function Card({
           transparent={true}
         />
       </mesh>
-      <mesh>
-        <planeGeometry attach="geometry" args={[1, 1.73]} />
+      <mesh geometry={geometry.current}>
         <meshStandardMaterial
           attach="material"
           map={front}

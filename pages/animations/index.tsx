@@ -20,19 +20,20 @@ if (GraphicsEntities.World.entities.length === 0) {
 
 const card = GraphicsEntities.WithCard.entities[0];
 const camera = GraphicsEntities.WithCamera.entities[0];
-camera.position.z = 10;
+camera.position.z = 4;
 
 gsap.globalTimeline.clear();
 gsap
   .timeline({ repeat: -1, repeatDelay: 1 })
-  .add(Animation.ItemCardUse(card, 0, false, false));
+  .add(Animation.Deal([card], false))
+  .add("escape", 2)
+  .add(Animation.Escape([card], false, 1), "escape")
 
 function Scene() {
   const ref = useRef<THREE.Group>();
   useFrame(() => {
     ref.current.position.copy(card.position);
     ref.current.rotation.copy(card.rotation);
-    ref.current.rotation.y = 0;
   });
   return (
     <>
