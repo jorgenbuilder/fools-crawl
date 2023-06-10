@@ -594,4 +594,52 @@ export namespace Animation {
     //   ? CardLayouts.RoomGrid(gameObj, i)
     //   : CardLayouts.RoomRow(gameObj, i)
   }
+  function bend(
+  buffer: THREE.BufferAttribute,
+  angle: number,
+  side: "both" | "left" | "right" = "right"
+) {
+  if (angle === 0) return;
+  const array = buffer.array as number[];
+  for (let i = 0; i < array.length; i += 3) {
+    const x = array[i];
+    const y = array[i + 1];
+    const z = array[i + 2];
+    if (side === "right") {
+      if (x < 0) continue;
+    } else if (side === "left") {
+      if (x > 0) continue;
+    }
+    const theta = x * angle;
+    let sinTheta = Math.sin(theta);
+    let cosTheta = Math.cos(theta);
+    array[i] = -(z - 1.0 / angle) * sinTheta;
+    array[i + 1] = y;
+    array[i + 2] = (z - 1.0 / angle) * cosTheta + 1.0 / angle;
+  }
+  buffer.needsUpdate = true;
+  }
+  
+  function createBendTween(
+  mesh: THREE.Mesh,
+  startAngle: number,
+  endAngle: number,
+  duration: number
+) {
+  const state = { angle: startAngle };
+  const geometry = new THREE.PlaneGeometry(1, 2, 5, 1);
+  return gsap.to(state, {
+    angle: endAngle,
+    duration: duration,
+    repeat: -1,
+    yoyo: true,
+    ease: "power1.inOut", // You can choose a different easing function if you like
+    onUpdate: () => {
+      mesh.geometry = geometry.clone();
+      const buffer = mesh.geometry.attributes.position as THREE.BufferAttribute;
+      bend(buffer, state.angle);
+      buffer.needsUpdate = true;
+    }
+  });
+}
 }
