@@ -20,6 +20,7 @@ if (GraphicsEntities.World.entities.length === 0) {
 
 const card = GraphicsEntities.WithCard.entities[0];
 const camera = GraphicsEntities.WithCamera.entities[0];
+camera.position.z = 10;
 
 gsap.globalTimeline.clear();
 gsap
