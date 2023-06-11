@@ -46,12 +46,12 @@ const Scene = () => {
         color={0xffaa55}
       />
       <Table />
-      {matches("GamePlay.Win") && <Win />}
-      {matches("GamePlay.GameOver") && <Lose />}
+      {matches("Dungeon.Win") && <Win />}
+      {matches("Dungeon.GameOver") && <Lose />}
       {matches("Menu") && <Title />}
-      {matches("GamePlay") && (
+      {matches("Dungeon") && (
         <>
-          {!matches("GamePlay.Win") && (
+          {!matches("Dungeon.Win") && (
             <Html position={portrait ? [0, 2, 0] : [0, -1.5, 0]} center>
               <div
                 style={{
@@ -69,7 +69,7 @@ const Scene = () => {
               </div>
             </Html>
           )}
-          {![matches("GamePlay.Win"), matches("GamePlay.GameOver")].includes(
+          {![matches("Dungeon.Win"), matches("Dungeon.GameOver")].includes(
             true
           ) && <Escape />}
         </>

@@ -215,9 +215,11 @@ export namespace GameMachine {
 
   export const Machine = createMachine(
     {
-      /** @xstate-layout N4IgpgJg5mDOIC5RQIYFswDoCyYB2ArgMQByAogOoD6A4gILZkDaADALqKgAOA9rAJYAXfjzycQAD0QAmAJyYAjAFYWANgAc01dIDsAFiWzVAZgA0IAJ6IFLaZmO3j05Xp0290gL6fzqDJhp0MAAFABsUC0wAZUEUACdBIghRLH48ADceAGssPyxAjDCI6NiEhDTMgGMUYVFWNnrxXgFasSRJRAc9TCUFdT1ZBWNZHVUdFh1zKwRjVVVMEdclJXVjJWM+9W9fIICgosiAETAUUKSUzArs3N2CkPCjk9DyjJ5q1vrG9uahETbQKQIVSyOwsJwKaQsdY6Yx6dSyKadMaYKHqGwrIw6dQsWR6bYgPJ7QoPTAHMBxAAqBDieBi8USElgsUEWBQADMWXEABQsACUREJdwOpIe5KpNLpCS+3D4v1E4kBaLsxnUqkMzhx0MmlkQem0mF0OlkTmMOhUxg2+MF+xJZMp1LwRAAYgB5AAyhyoAGE6AAlQ7SkA-VoKxCLTDA5aQ9YsdT6Mw6hB6PQKCOyVZaTGGAx4nwE2424p28WOshRH3BZjsJqykPtQHoliYDyzC0w3Sq9SImbw5sKXFxliuUb9q0F4nFJ08UIQL3xCDnPCpV45TDWieRKczudxCAvKo1P6favfWt-UMICEsJsaI26Obp6R6buqGwG1R6Vs4vRqVRj-xCiSZCwNUXBgIuy6ZKu673MUwGgWA+5vIedTsIGwbnvWiCqvMShuHIcLSE+2jdlo3SGPoRE4tImg6F4eYwcKZB4BAJZEOhZ7ylhl4KEaCwwmiLAQlRz6JtiqZQrM4xDFiIyyP++SFpEzGsQ67EKBwp4tJhAJhiqBqCf0epKEROjatM4kousYxCaa8JGgpRKwcpLFsUw0iaTK2lcbpCAgvINFqLGvRKAML5xpgmjwkJshGMCYyOYBcGuWpTDGJ5Qacf8HQIOoqqKK++hjKq0jdkor6YPGqhgiCvSjMYiVKZgXqhCccS+jwPBoBBlwrjcAFNS1bUdV1SHvEeaEnl5crZYCAxKD0pofiqgzFQiibrOoKK8WCNjaGC5WNRumAUGkpCULQDBVhlGE+TlNjyAoH5ojCRhLLY3arKmKijJ+0jDDiyhHc5Tkuuk5LndQ9CMBx3mzdYOIFXCvHDB+ZofYmv0GYsyYKMmDgNfieA8BAcDiHkNZwxeAC0fSRQMGwwnRoVguZiDUyoEYbFRRgbIs9E7P4uCEJTM0XimEZ9BC1nxteRjdrMkWhQYmjJkJ165oLikbqLda+YrwLOCYII2S43a8ToigKLx-bLRs2iE1rTnCpKgi6zpOX9GmRvDFo0mhQrH4LL0TgeGaqp40owPCscpzu3dgIqAtuiGEM83VbI6yB90mdDE+KcRwY0e2qK9oSqUbtaWL3HxQs3N9HCvtGmVkIorFvE2f0WJ-gx44g8WDrx-DfnXoo5XGj+yayKzCt5c2IeBboEymsXk7TrO85Dxe1tGAsHeuP2MJDEo3YDPMr40TC1VL30q-KSBKBgVv3FDBszZrNi0+6LFbMzEHuehwLq+IuvcBrHRUiWZ+vkIQWnsERWKeoRy-m7HRYwlVXyhTMumWK-Q77NVavEEaaAoE5ThAtfQExNC6GTKgl8+gCpuDogg40sY8GnWyrdYeEIPCVTjMsBwIIISjE+hoOu-Y9RGFjNbTW+YwEgzuGDckJDARjDQcMSOaIv5yxQemSqD0jQeC0GsBQ3hvBAA */
+      /** @xstate-layout N4IgpgJg5mDOIC5RQIYFswDoCyYB2ArgMQByAogOoD6A4gILZkDaADALqKgAOA9rAJYAXfjzycQAD0QAmAJyYAjAFYWANgAc01dIDsAFiWzVAZgA0IAJ6IFLaZmO3j05Xp0290gL6fzqDJgARAjwYUUwAZUEUACdBIghRLH48ADceAGssPywgkLAwyJjBBGS0gGMUYVFWNhrxXgEqsSRJGXV5JWNZZVUbFhYXcysEY1UdTGl21VclLXUFBSNvX3Qc4NC8QLAUABt4xMxSjKzVwPX8zYDtnZLUngqmmrqWhqERZtApBFVVJUxejwOBRjFiGaRDRCjVSYbq9dTqVTdPTIhTLEDZM55MIABR2KAsYGiABUCNE8IVYkQJLAooIsCgAGZ06IAChYAEoiBjchtMLj8YSSWSKYJntw+G9ROIvjZZpgdJ1lAp4VCDBCRu0YQZ1G4BtItPq0dzzji8QTiaS8EQAGIAeQAMgEqABhOgAJQCYpArya0usxjlLB0LC6wPUKmMxh06tGfx0sn1ejUymcriNpx5Fz5ZsFlqIZHCruxzHY9QlvpaMoW8kj0icDnUTj0XXVuj0ikMslk4eDA2ROnT-kzYWtPB2EGdMQg+zwSTumUwxqxm1H48n0Qgt3KlXeT1LL3L7z9CAUXXbkYTozU00m6sMxnl+qDSmmxk0QcHa2XmDIsAqXDAGc5zSBcl15X9-zALd7h3ap2C9H0j0rRBXHGFhumkPRZTrKMzEsGROkwfoFiwnVu2VWRjE-TFwLwCAhStBDDylZCTyjds9FUIMfi42xZD0dR1XmOwnG0AN+MWfovB8dEMxNTYyDohiiCYBQOAPRokM+awFCw-4tAGENFjkEwhIUESDXErDZCk6jhwUpS8yYaR1PFTSWO0k9dJE4xTwE-p4VkJQlHVXtMA8RNpCDRYlhksCs0U+inOMVzvWYj5Wi8nR1AmWYlB0bRJiMZR1RMFgJnhdoAoE7RUTiuTv2dHZtmiN0eB4NAgMOecTiHeTMCalq2o66CHl3eD9zcyUMq+fzMGC9RbEwordDvRb-gMLQE044jZDs-qKGSUhKFoBgS1SxCPMymx5GBASFB0LppgVWwhN8+buObOsbO6JR9u-GhVltFJCWO6h6EYJj3Jm6x0MUaZ5keowZle-CEAK9siv0FFkQcKi0TwHgIDgcRsjLaHjwAWmVTB1D0SiHqjaQlCTKN1UplR-l85wFTGBUFT0ajcEIcnpuPPS4XMzoxmbfojBjaFw2RJRNGRQyWEF+q+uXUWK080Z-gTYEui0YNBjR4E-iUFwfjURbrYDf7eRFXWtMyunDecEwExBc3hlGdsgtPZaFQRXS-q1r9eSuXZXau2abImIxOgTWQdGZ8MFfbfLsp0BUjGKp2s35c0GJdjSxdYnUFHsMPjGbRYCsWGN4XCqNfn4ps5F0ovTQFC0yTjmGvO6ebJgDAq3EozQW5y5sCt81xmZZ3uVzHCcpyH49T0T9O1FBVWFHVVwcvmZUNC4pxdHxlZtfAv8UAArfWOynLpnMr7leVEK0YMmEFjprpRsKtraa1vlHBKjlB4Vz1tdQEuV0IIk0C+ZuaN9DlXrp0M+CZdA90jjRLMg0YjDTQM-Tyrhyr53DH5KMN1Srhlpqeb+qFGyO3wfZTAh0MqXWHt5B8zN0KRkjG4bQ0Y0bwjsAiQyBUVYKl8qvTAgMMDA0JGQ92o85BqF1BreMqNhjZWhCrBw-RhGcQet4bwQA */
       id: "game",
+
       predictableActionArguments: true,
+
       schema: {
         context: {} as GameLogic.GameState,
         events: {} as Action,
@@ -225,14 +227,16 @@ export namespace GameMachine {
           [key: string]: { data: Partial<GameLogic.GameState> };
         },
       },
+
       tsTypes: {} as import("./game.typegen").Typegen0,
-      initial: "Menu",
       context: GameLogic.DefaultGameState(),
+
       states: {
         Menu: {
-          on: { NEW_GAME: "GamePlay" },
+          on: { NEW_GAME: "Dungeon" },
         },
-        GamePlay: {
+
+        Dungeon: {
           initial: "Start",
           onDone: [],
           states: {
@@ -304,8 +308,10 @@ export namespace GameMachine {
               entry: "gameOverHook",
             },
           },
-        },
+        }
       },
+
+      initial: "Menu"
     },
     {
       services: {
