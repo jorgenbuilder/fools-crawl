@@ -21,7 +21,7 @@
 "newGame": "done.invoke.game.Dungeon.Start:invocation[0]";
         };
         missingImplementations: {
-          actions: "gameOverHook";
+          actions: never;
           delays: never;
           guards: never;
           services: never;
@@ -30,7 +30,6 @@
           "assignFoldingCard": "FOLD_CARD";
 "assignGameState": "done.invoke.game.Dungeon.ClearRoom:invocation[0]" | "done.invoke.game.Dungeon.Deal:invocation[0]" | "done.invoke.game.Dungeon.Escape:invocation[0]" | "done.invoke.game.Dungeon.FoldCard:invocation[0]" | "done.invoke.game.Dungeon.Start:invocation[0]";
 "clearFoldingCard": "done.invoke.game.Dungeon.FoldCard:invocation[0]";
-"gameOverHook": "";
         };
         eventsCausingDelays: {
           
