@@ -21,9 +21,9 @@
 - [ ] Create a tutorial
 - [ ] Create a dialog system
 - [ ] Create a system for going dungeon to dungeon with saved progress
-- [ ] Play with bendy cards
+- [x] Play with bendy cards
 - [ ] Add a rewind mechanic (let send the player back a few turns)
-- [ ] Fix the deck pile animation
+- [x] Fix the deck pile animation
 - [ ] Implement different views like Inscryption
 - [ ] Setup automatic card animations based on pile positions, so you can just add cards to a pile in game state
-- [ ]
+- [ ] Cards clip thru table in escape animation

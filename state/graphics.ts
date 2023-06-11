@@ -317,7 +317,7 @@ export namespace Animation {
       .to(
         card.position,
         {
-          y: -0.5,
+          y: card.position.y - 0.5,
           ease: CustomEase.create(
             "custom",
             "M0,0 C0,-0.668 0.634,-0.652 0.634,-0.652 0.634,-0.652 1,1 1,1"
@@ -348,7 +348,7 @@ export namespace Animation {
       .to(
         card.position,
         {
-          y: 0,
+          y: card.position.y,
           duration: 0.125,
         },
         "reset"
@@ -379,7 +379,7 @@ export namespace Animation {
       })
       .add("use")
       .to(card.position, {
-        y: 0.125,
+        y: card.position.y + 0.125,
         z: card.position.z + 0.25,
         duration: 0.125,
       })
@@ -391,12 +391,12 @@ export namespace Animation {
         }
       })
       .to(card.position, {
-        y: 0,
+        y: card.position.y,
         z: card.position.z,
         duration: 0.125,
       })
       .to(card.position, {
-        y: 0,
+        y: card.position.y,
         duration: 0.25,
       })
       .add(() => Discard(card, positionInDiscard, portrait));
@@ -506,25 +506,6 @@ export namespace Animation {
 
       i++;
     }
-  }
-
-  /** Makes all of the cards in the deck drift entropically. */
-  export function DyingCards(
-    /** A selector on the ECS containing all cards. */
-    bucket: ArchetypeBucket<GraphicsEntities.Card>
-  ) {
-    for (const { position } of bucket.entities) {
-      position.x += 0.0125 - Math.random() * 0.025;
-      position.y += 0.0125 - Math.random() * 0.025;
-    }
-  }
-
-  function randomVec3(scale: number) {
-    return GraphicsEntities.DefaultVec3.clone().set(
-      Math.random() * scale - scale / 2,
-      Math.random() * scale - scale / 2,
-      0
-    );
   }
 
   /** Shakes the camera indicating damage. */

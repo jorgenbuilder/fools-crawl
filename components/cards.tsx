@@ -12,10 +12,8 @@ export default function Cards() {
   const { portrait } = useArbitraryStore();
 
   useFrame(({ clock: { elapsedTime } }) => {
-    if (state.matches("Menu") || state.matches("GamePlay.Win")) {
+    if (state.matches("Menu")) {
       Animation.DancingCards(elapsedTime, GraphicsEntities.WithCard, portrait);
-    } else if (state.matches("GamePlay.GameOver")) {
-      Animation.DyingCards(GraphicsEntities.WithCard);
     }
   });
 
