@@ -1,11 +1,13 @@
 import Rules from "./RuleEngine";
 import EscapeRules from "./EscapeRules";
 import PotionRules from "./PotionRules";
+import { FoldingRules } from "./FoldingRules";
 
 export const standardRules: Rules.Rule[] = [
   EscapeRules.SingleRoom,
   EscapeRules.NoEnemies,
   PotionRules.SubsequenceImpotence,
+  FoldingRules.InRoom,
 ];
 
 export const developmentRules: Rules.Rule[] = [

@@ -35,7 +35,7 @@
           
         };
         eventsCausingGuards: {
-          "isCardInRoom": "FOLD_CARD";
+          "isCardFoldable": "FOLD_CARD";
 "isDungeonComplete": "";
 "isHealthDepleted": "";
 "isRoomComplete": "";

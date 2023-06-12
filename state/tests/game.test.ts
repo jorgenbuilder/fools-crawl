@@ -4,6 +4,7 @@ import { rules, standardRules } from "../rules";
 import EscapeRules from "../rules/EscapeRules";
 import PotionRules from "../rules/PotionRules";
 import Rules from "../rules/RuleEngine";
+import { FoldingRules } from "../rules/FoldingRules";
 
 namespace TestSuites {
   /** Ensure that the new game state is setup correctly. */
@@ -94,6 +95,37 @@ namespace TestSuites {
         expect(handlers[2]).not.toHaveBeenCalled();
       });
     });
+    describe("Folding card rules", () => {
+      it("Should allow folding a card in the room", () => {
+        const update = { ...state, foldingCard: state.room[0] };
+        expect(rules.determine(update, Rules.Determination.canFold)).toBe(true);
+      });
+      it("Should not allow folding a card not in the room", () => {
+        const update = { ...state, foldingCard: state.deck[0] };
+        expect(rules.determine(update, Rules.Determination.canFold)).toBe(false)
+      });
+      it("Should not allow folding a card when folding rules are removed (tutorial case)", () => {
+        rules.removeRule(FoldingRules.InRoom);
+        for (const card of state.room) {
+          const update = { ...state, foldingCard: card };
+          expect(rules.determine(update, Rules.Determination.canFold)).toBe(false);
+        }
+        // Let's just put that back
+        rules.registerRule(FoldingRules.InRoom);
+      });
+      it("Should allow folding only a specific card with the SpecificCard rule", () => {
+        rules.removeRule(FoldingRules.InRoom);
+        const card = state.room[0];
+        const rule = FoldingRules.SpecificCard(card);
+        rules.registerRule(rule);
+        const update = { ...state, foldingCard: card };
+        expect(rules.determine(update, Rules.Determination.canFold)).toBe(true);
+        expect(rules.determine({ ...update, foldingCard: state.room[1] }, Rules.Determination.canFold)).toBe(false);
+        // Let's just put that back
+        rules.removeRule(rule);
+        rules.registerRule(FoldingRules.InRoom);
+      })
+    })
   }
 
   /** Ensure the monster fighting mechanics work. */

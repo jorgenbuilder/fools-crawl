@@ -201,8 +201,8 @@ export namespace GameLogic {
   }
 
   /** Determines whether given card is in the room. */
-  export function IsCardInRoom({ room }: GameState, index: number): boolean {
-    return room.includes(index);
+  export function IsCardFoldable(state: GameState, foldingCard: number): boolean {
+    return rules.determine({ ...state, foldingCard }, Rules.Determination.canFold);
   }
 }
 
@@ -261,7 +261,7 @@ export namespace GameMachine {
             PlayerTurn: {
               on: {
                 FOLD_CARD: {
-                  cond: "isCardInRoom",
+                  cond: "isCardFoldable",
                   target: "FoldCard",
                   actions: "assignFoldingCard",
                 },
@@ -331,8 +331,8 @@ export namespace GameMachine {
         isHealthDepleted: (context) => GameLogic.IsHealthDepleted(context),
         isRoomComplete: (context) => GameLogic.IsRoomComplete(context),
         isRoomEscapable: (context) => GameLogic.IsRoomEscapable(context),
-        isCardInRoom: (context, event) =>
-          GameLogic.IsCardInRoom(context, event.index),
+        isCardFoldable: (context, event) =>
+          GameLogic.IsCardFoldable(context, event.index),
       },
     }
   );
@@ -376,7 +376,7 @@ export namespace GameEffects {
       const { portrait } = useArbitraryStore.getState();
 
       // Stack cards in the deck when the game starts.
-      if (state.matches("GamePlay.Start")) {
+      if (state.matches("Dungeon.Start")) {
         Audio.Stop();
         // Audio.PlaySound("ambience");
         Animation.OrganizeDeck(
@@ -396,7 +396,7 @@ export namespace GameEffects {
       }
 
       // Deal cards at the start of the turn.
-      if (state.matches("GamePlay.PlayerTurnStart")) {
+      if (state.matches("Dungeon.PlayerTurnStart")) {
         const cards = state.context.room.map(
           (i) => GraphicsEntities.WithCard.entities[i]
         );
@@ -408,7 +408,7 @@ export namespace GameEffects {
       }
 
       // Discard cards when the player folds.
-      if (state.matches("GamePlay.FoldCard")) {
+      if (state.matches("Dungeon.FoldCard")) {
         const card = (state.event as GameMachine.ActionFoldCard).index;
         const gameObj = GraphicsEntities.WithCard.entities[card];
         if (["swords", "wands"].includes(gameObj.card.suit)) {
@@ -434,7 +434,7 @@ export namespace GameEffects {
       }
 
       // Move room cards back to the deck when the player escapes.
-      if (state.matches("GamePlay.Escape")) {
+      if (state.matches("Dungeon.Escape")) {
         const cards = state.context.room
           .map((x) => GraphicsEntities.WithCard.entities[x])
           .filter((x) => x !== undefined);
@@ -445,7 +445,7 @@ export namespace GameEffects {
         Animation.Escape(cards, portrait, state.context.deck.length);
       }
 
-      if (state.matches("GamePlay.Win") || state.matches("GamePlay.GameOver")) {
+      if (state.matches("Dungeon.Win") || state.matches("Dungeon.GameOver")) {
         Animation.MoveCamera(
           GraphicsEntities.WithCamera.entities[0],
           CardLayouts.DefaultCamera()

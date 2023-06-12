@@ -6,6 +6,7 @@ namespace Rules {
   export enum Determination {
     canEscape = "canEscape",
     canDrink = "canDrink",
+    canFold = "canFold",
   }
 
   /** List of actions that can be made by our rule engine. */
