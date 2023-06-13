@@ -38,7 +38,7 @@
         };
         eventsCausingActions: {
           "assignFoldingCard": "FOLD_CARD";
-"assignGameState": "done.invoke.createStandardDungeon" | "done.invoke.createTutorialDungeon" | "done.invoke.game.Dungeon.ClearRoom:invocation[0]" | "done.invoke.game.Dungeon.Deal:invocation[0]" | "done.invoke.game.Dungeon.Escape:invocation[0]" | "done.invoke.game.Dungeon.FoldCard:invocation[0]" | "done.invoke.game.Dungeon.Start:invocation[0]";
+"assignGameState": "done.invoke.createStandardDungeon" | "done.invoke.createTutorialDungeon" | "done.invoke.game.Dungeon.ClearRoom:invocation[0]" | "done.invoke.game.Dungeon.Deal:invocation[0]" | "done.invoke.game.Dungeon.Escape:invocation[0]" | "done.invoke.game.Dungeon.FoldCard:invocation[0]" | "done.invoke.game.Dungeon.Start:invocation[0]" | "done.invoke.restartDungeon";
 "clearFoldingCard": "done.invoke.game.Dungeon.FoldCard:invocation[0]";
         };
         eventsCausingDelays: {
