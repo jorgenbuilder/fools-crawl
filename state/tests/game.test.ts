@@ -30,8 +30,8 @@ namespace TestSuites {
     it("Should start with an discard pile", () => {
       expect(state.discard).toEqual([]);
     });
-    it("Should start with a full deck", () => {
-      expect(state.deck.length).toEqual(GameConstants.DECK_SIZE);
+    it("Should start with a full deck in the draw pile", () => {
+      expect(state.draw.length).toEqual(GameConstants.DECK_SIZE);
     });
   }
 
@@ -41,8 +41,8 @@ namespace TestSuites {
     it("Should deal the correct number of cards", () => {
       expect(update.room.length).toBe(4);
     });
-    it("Should remove dealt cards from the deck", () => {
-      expect(update.deck.length).toBe(
+    it("Should remove dealt cards from the draw pile", () => {
+      expect(update.draw.length).toBe(
         GameConstants.DECK_SIZE - update.room.length
       );
     });
@@ -101,7 +101,7 @@ namespace TestSuites {
         expect(rules.determine(update, Rules.Determination.canFold)).toBe(true);
       });
       it("Should not allow folding a card not in the room", () => {
-        const update = { ...state, foldingCard: state.deck[0] };
+        const update = { ...state, foldingCard: state.draw[0] };
         expect(rules.determine(update, Rules.Determination.canFold)).toBe(false)
       });
       it("Should not allow folding a card when folding rules are removed (tutorial case)", () => {
@@ -340,9 +340,9 @@ namespace TestSuites {
         rules.resetRules();
       });
 
-      it("Should move remaining cards to the deck and update didEscapeLastRoom", () => {
+      it("Should move remaining cards to the draw pile and update didEscapeLastRoom", () => {
         game = GameLogic.EscapeRoom(state);
-        expect(game.deck.length).toBe(state.deck.length + state.room.length);
+        expect(game.draw.length).toBe(state.draw.length + state.room.length);
         expect(game.didEscapeLastRoom).toBe(true);
       });
 
@@ -403,17 +403,17 @@ namespace TestSuites {
 
   export function EndingTheGame(state: GameLogic.GameState) {
     describe("Winning the game", () => {
-      it("Should declare dungeon complete if deck and room are empty", () => {
-        const update = { ...state, deck: [], room: [] };
+      it("Should declare dungeon complete if draw pile and room are empty", () => {
+        const update = { ...state, draw: [], room: [] };
         expect(GameLogic.IsDungeonComplete(update)).toBe(true);
 
-        const update2 = { ...state, deck: [], room: [undefined] };
+        const update2 = { ...state, draw: [], room: [undefined] };
         expect(GameLogic.IsDungeonComplete(update2)).toBe(true);
 
-        const update3 = { ...state, deck: [0], room: [] };
+        const update3 = { ...state, draw: [0], room: [] };
         expect(GameLogic.IsDungeonComplete(update3)).toBe(false);
 
-        const update4 = { ...state, deck: [], room: [0] };
+        const update4 = { ...state, draw: [], room: [0] };
         expect(GameLogic.IsDungeonComplete(update4)).toBe(false);
       });
     });

@@ -1,16 +1,17 @@
 import * as THREE from "three";
-import { TarotDeck } from "./TarotDeck";
 import { GameMachine } from "./game";
 
 export const PreloadWorker =
   typeof window === "undefined" ? null : new Worker("preload-worker.js");
 
-class TextureLoader {
+export class TextureLoader {
   private readonly assets: string[];
   private readonly chunkSize: number;
   private readonly delay: number;
 
   private cache: THREE.Texture[];
+  private cancelled: number = -1;
+  private priority: number[];
 
   constructor(assets: string[], chunkSize: number = 4, delay: number = 250) {
     this.assets = assets;
@@ -19,6 +20,7 @@ class TextureLoader {
     this.cache = Array(assets.length)
       .fill(0)
       .map(() => new THREE.Texture());
+    this.priority = [];
     this.LoadAll();
   }
 
@@ -27,6 +29,7 @@ class TextureLoader {
   private async LoadAsset(asset: string) {
     if (PreloadWorker === null) return;
     const i = this.assets.indexOf(asset);
+    if (this.cache[i].image !== null) return; // Skip images that were already loaded
     const buffer = await new Promise<ArrayBuffer>((resolve, reject) => {
       PreloadWorker.onmessage = (e) => resolve(e.data);
       PreloadWorker.postMessage({ url: asset });
@@ -45,24 +48,29 @@ class TextureLoader {
     }
   }
 
-  private async LoadAll() {
-    const priority = [...GameMachine.use.getState().state.context.deck];
+  private async LoadAll(cancelVersion: number = 0) {
     for (let i = 0; i < this.assets.length; i += this.chunkSize) {
+      if (this.cancelled >= cancelVersion) {
+        break;
+      }
       await this.LoadChunk(
-        priority.slice(i, i + this.chunkSize).map((i) => this.assets[i])
+        this.priority.slice(i, i + this.chunkSize).map((i) => this.assets[i])
       );
       await new Promise((resolve) => setTimeout(resolve, this.delay));
     }
+  }
+
+  private cancel() {
+    this.cancelled += 1;
+  }
+
+  public prioritize(newPriority: number[]) {
+    this.cancel();
+    this.priority = newPriority;
+    this.LoadAll(this.cancelled + 1);
   }
 
   public getTexture(i: number) {
     return this.cache[i];
   }
 }
-
-export const CardArt = new TextureLoader(
-  Array(56)
-    .fill(0)
-    .map((_, i) => TarotDeck.getTarotCard(i))
-    .map((card) => `/deck-2/${card.suit[0].toUpperCase()}${card.value}.png`)
-);

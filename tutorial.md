@@ -25,8 +25,9 @@ Not sure best way to build this.
 Don't want to have to mutate existing code.
 
 Rule Engine?
-    - Apply new escape rule (rule categories will help) so player can't escape first room
-    - Apply new rule so player can only fold specific card
+    - Remove all escape rules so that player can't escape first room
+    - Remove all folding rules so player can't fold during dialogues
+    - Apply new rule so player can only fold specific card, then remove it
 
 UI and triggers?
     - Tutorial machine
@@ -35,3 +36,4 @@ UI and triggers?
 
 Initialization?
     - On new game, if player hasn't done tutorial, init tutorial and create tutorial deck. Pass tutorial deck to dungeon.
+        - This gets quirky with the deck based preloader. Feels like that needs to be tidied up a bit.

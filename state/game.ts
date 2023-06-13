@@ -30,6 +30,8 @@ import { TarotDeck } from "./TarotDeck";
 import { rules } from "./rules";
 import { Audio } from "./audio";
 import Rules from "./rules/RuleEngine";
+import Tutorial from "./tutorial";
+import { CardArt } from "./CardArt";
 
 export namespace GameConstants {
   /** Number of cards in the deck. */
@@ -40,8 +42,10 @@ export namespace GameConstants {
 
 export namespace GameLogic {
   export interface GameState {
-    /** The cards remaining in the deck. */
+    /** The original deck of cards for the dungeon. */
     deck: number[];
+    /** The cards remaining in the dungeon. */
+    draw: number[];
     /** The cards representing the room. */
     room: (number | undefined)[];
     /** The pile of discards. */
@@ -62,8 +66,10 @@ export namespace GameLogic {
 
   /** Return a new object holding the default state of a new game. */
   export function DefaultGameState(): GameState {
+    const deck = NewDeck();
     return {
-      deck: NewDeck(),
+      deck,
+      draw: [...deck],
       room: [],
       discard: [],
       health: GameConstants.MAX_HEALTH,
@@ -80,24 +86,29 @@ export namespace GameLogic {
   }
 
   /** Start a new game. */
-  export function NewGame(state: GameState): GameState {
-    // If the deck is already fresh, we use it instead of creating a new one.
-    // This allows prioritized preloading of card assets based on the deck order.
-    // (Deck initialized on load, but also when user clicks "new game".)
-    const newState = DefaultGameState();
-    if (state.deck.length === GameConstants.DECK_SIZE) {
-      if (!TarotDeck.isShuffled(state.deck)) {
-        throw new Error("Ensure the deck is shuffled during initialization.");
-      }
-      return { ...newState, deck: state.deck };
-    }
-    return newState;
+  export function NewGame(): GameState {
+    const state = DefaultGameState();
+    CardArt.prioritize(state.deck);
+    return state;
   }
 
-  /** Deal a room of cards from the deck. */
-  export function Deal({ deck, ...state }: GameState): GameState {
-    const room = deck.splice(0, 4);
-    return { ...state, room, deck };
+  export function NewGameWithTutorial(): GameState {
+    const state = DefaultGameState();
+    state.deck = Tutorial.TutorialDeck();
+    state.draw = [...state.deck];
+    CardArt.prioritize(state.deck);
+    const tutorialActor = Tutorial.Machine;
+    return state;
+  }
+
+  export function Restart(state: GameState): GameState {
+    return { ...DefaultGameState(), deck: state.deck, draw: state.deck }
+  }
+
+  /** Deal a room of cards from the draw pile. */
+  export function Deal({ draw, ...state }: GameState): GameState {
+    const room = draw.splice(0, 4);
+    return { ...state, room, draw };
   }
 
   /** Fold selected card from the current room. */
@@ -163,11 +174,11 @@ export namespace GameLogic {
     };
   }
 
-  /** Player flees the room: replace cards into the deck. */
-  export function EscapeRoom({ room, deck, ...state }: GameState): GameState {
+  /** Player flees the room: replace cards into the draw pile. */
+  export function EscapeRoom({ room, draw, ...state }: GameState): GameState {
     return {
       ...state,
-      deck: [...deck, ...room.filter((x) => x !== undefined)],
+      draw: [...draw, ...room.filter((x) => x !== undefined)],
       room: [],
       didEscapeLastRoom: true,
     };
@@ -189,9 +200,9 @@ export namespace GameLogic {
   }
 
   /** Determines whether the player has completed the dungeon based on game state. */
-  export function IsDungeonComplete({ deck, room }: GameState): boolean {
+  export function IsDungeonComplete({ draw, room }: GameState): boolean {
     return (
-      deck.length === 0 && room.filter((x) => x !== undefined).length === 0
+      draw.length === 0 && room.filter((x) => x !== undefined).length === 0
     );
   }
 
@@ -208,14 +219,14 @@ export namespace GameLogic {
 
 export namespace GameMachine {
   // Player actions
-  type ActionNewGame = { type: "NEW_GAME" };
+  type ActionNewGame = { type: "NEW_GAME", state?: Partial<GameLogic.GameState> };
   export type ActionFoldCard = { type: "FOLD_CARD"; index: number };
   type ActionEscape = { type: "ESCAPE" };
   type Action = ActionNewGame | ActionFoldCard | ActionEscape;
 
   export const Machine = createMachine(
     {
-      /** @xstate-layout N4IgpgJg5mDOIC5RQIYFswDoCyYB2ArgMQByAogOoD6A4gILZkDaADALqKgAOA9rAJYAXfjzycQAD0QAmAJyYAjAFYWANnWyAHCy0B2TdOkAaEAE9Es1ZgDMmhdd0AWO6pZLNj6wF8vJ1BkwAEQI8GFFMAGVBFAAnQSIIUSx+PAA3HgBrLH8sYNCwcKjYwQQU9IBjFGFRVjZa8V4BarEkSRlLTD1pFjslR1lreyUTcwRrVV1MaU1LVQVuxyVZWV0fP3RckLC8ILAUABsEpMwyzOyNoK2CncC9-dK0nkrm2vrWxqERFtApBHUlTBzRzSawsBQTNyyYxmRDjKyycEKTSaVQIxzohRrEA5S75cIABX2KFMYBiABUCDE8EU4kQJLBooIsCgAGZMmIAChYAEoiDi8ttMITiaSKVSaYI3tw+J9ROJfgo3NJMLolIMlEjNHDFiNYTNOotNLpFfNpKpDFj+VcCUSSeTKXgiAAxADyABlAlQAMJ0ABKgSlIA+zXliCGypYuhY1gRqk0KmsDl1Y1UAN0UOkjjUymkCkcq182IuAuuQttoodRDIER9+OY7AaMpDrQV83kyKUSnUWZjWkcyekTkUrhYOnznk8HktxetOydPH2EC9sQgRzwyUeWUwVrxc4XS5XDwqVS+rwb7ybX1DCHsskcNhjINc3emyaW1hVhkjXcn3QL6wCEtwjIWBKi4MA1w3dItx3QUQLAsAjyeE8anYQNgyvFtEHzSYdHmdVUyNDUBzVTBRwUPMkXTOwZm8QtYNLMg8AgMVHXQy85Swm8HHvRxXF0dQRzkZxkzsZVrDNEElkcBRZFHaRp0A2dMCYljKyYBQOAvJpMJ+MNKMBM0wWjWS5FUaxRPmGxJOsaTZPkxTNl3FTmNYogmGkLTpR0zi9JvPNxMGaxnFHZFZE7ZMoxYTBgUMYFI1kyxHNxODXPU6wvKDDjvjafz9CmJRpCUATDBmOZhhhP5QSmZEZlC5xzUxeiZ2cr19j2GJfR4Hg0Egk5N3OJTWva2Iup6pDnlPNDz282Uct+ELME7bQJJYPjgTvCrRmKzQDTVLtUS0GZ-yLIbBQoFJSEoWgGHrTKMN83LFXkBRjUTSxFh-EFRIMTAjTHRVQR7JqAKcwUaA2F1UlJK7qHoRh2J8+awx0RQ3pjVRPsx77KrsaKejBdwIXBHxCzwHgIDgcQckbJHrwAWiRP7+kTUF7PmV7NGTemVEBQZDHseNDH45LcEIWm5uvGTASReY1QmTxR0sZNxj+vpDUzLNFTW5KgJyh7kZTQEoXBR9ib6ZNwQBDU+lRDwBNe1NdeUiUJebPyPGN3NzKhc3+0q8Z73C+xM0HIm8yUZ3nNuA43d03L+misy1ShFYivjFXMaW3R9BzpZUTmKPBWFO1WNd7TJa4o0FBsFF7E8WSHdkFXkRihxUzvCSNrzIvSxLisqTjx7WwRJbplsgTjQGAwW92zwBMGfMir6XvwnnRdlxiCAh8N29ot0bpXHcTMFGTfNdrsJE41cCTBzo0GUsY0CUHAnfr2RZUDFjexOZWf3RiMood6bhFTdEsJHZqZ1GJpUHhXd2T1gQfiKjoFEBguyyUilmGwixbAUQzMaRwq8dhtQ6mNNAb8uL5n3ksIWcxNpFX-oga+2DzTvVRCCQcRDMAXX1tla8AUkEqAGKzY05pdA-U-q4RUAl3CqkGFwiGGAoakgoX5LQNdjTxnMiCRWqpLL43YX-YExp3Cky8EAA */
+      /** @xstate-layout N4IgpgJg5mDOIC5RQIYFswDoCyYB2ArgMQByAogOoD6A4gILZkDaADALqKgAOA9rAJYAXfjzycQAD0QAmAJyYAjAFYWANlUAWAOwAOaRpaytAGhABPREcxLZAZgVyttjUtVGFAXw+nUGTABECPBhRTABlQRQAJ0EiCFEsfjwANx4AayxfLEDgsFCI6MEEJNSAYxRhUVY2avFeAUqxJElEW1tVRQNZDTtXbpYTc0tpHUwtB3HZBR17JRcvH3RsoJC8ALAUABs4hMwS9MylgJW8tf8NzeKUnnLG6trm+qERJtApBC0WBUxZFmkVJRyVQKdq2UwWBCyEaYVRzP5KZwaf7tBYgLLHXKhAAKmxQZjAUQAKgQongCjEiBJYJFBFgUAAzWlRAAULAAlER0TlVpgcXiCcTSeTBA9uHxnqJxO8FCwdPIWBoFEjPhNFUpwZYlN9VDNPlp1CpxjpUVyTtjcfiiSS8EQAGIAeQAMv4qABhOgAJX8opAT0aUsQIJ0o1sSh06h1SoUMp0Gsh0i01lsLAGWmkOr+ipNR25p15FoF1qIZDC7qxzHYdXF-ua0oU6kUTh0araAwRcZmSkwct0GmBCeUbWzflzoVtPE2EFd0QgOzwiWuGUwpsxa3Hk+nUQgVzKFRe90rj2rLwDCCVyZhCZsaZUyi0Gjj0c0mGTI00Oi0n4Rxu8aJzZrWMhYHKLgwDnBdUiXFceSAkCwB3G49yqdgfT9E9a0QLVbBfLRZBUdRujw6QOyVMZbB7HQEXTEYNGHZZV0wMg8AgQUbVQ49JQws9FRYMYegVBQ0zsI1H1se9MDUAwb26T5ujojEYOY1iiCYBQOCPBp0LeQNBMTKYkUojQNF1WxiKGM8xI0CTNAGf4ZMMWjf2gvMmJYosmGkdSxU0zjtLPQTRmBWRVGkewxKMfRH2oxRVBTXQ02MlglCUeTR0ApT3NsLzfQ414WjPaRSLhHRo2jQF9AfcyHBTbs3E+LowzsRzFhHADMFdTYNiiD0eB4NBwL2RdDlahiOq6nq+oQ259xQw9vIlPL3i1Dpm1UZNxi0ZK1HVKqlV4nV7DsUN01kWRUraigklIShaAYCtsrQ3z8qVLsXGCpVPz7RUE0fIyrNij9PwOwr03OhiaCWe1kgJa7qHoRh2J8xbAxcTA3uBbR700CZRPGbtBNOqigTkpz-wYj04EiCl4nnQbIKwKJKcKNLEYW09o0TL5TrEkFnH0KFH2mRNdDUNpo224N5NdRmKjANKVLmnKkfZjppDVpLKMBbRgVcON9A6XTX2cewQV0KWZdpeXVIe3LTyRDoxOvFg2kVWKjD1vtGycP5jejcitHNjZaWJQQeCifgtnlmmIIOTBSgtsAQ7DiPNhZxXHuRhAAFppF4z4aI21xjJcWNzKM0ZXHDBEktzkFpHkgpmJnKPdn2Jd46DsBG4gZuANZms-LE4WbEVYNm3+D9VDjcvrB1WFk0BL5TJS0m-GFeWqRpOlGQJVkOXRde+-T22uNseQQuUU6nB6HVTqn8y1sTaNm31fDXFcLxfzwHgIDgcQsirMrLiWclRWRVM-XS30jJxizioGE9hc73h0GoUKOp5K4EIIAtmXFFQwmmA4BEqh7zJkMPfCE7RuxzBLhVL4KZmp-hGqsLBA98r7UnlMEq3R7CGVkHGNMiZkRvjDAoPCXwwY8mFMwrSz01ZjDsBfZsbQtTtnMlCB2d4MyCQMElcReZzhbCkU9Ja6ZrDNhKkZdMSidoQjUS+O8Sp+afh0aveiPI+SWlYpIjS2C-K-ETEQoyDljIzF4aouBgk5jBVlICciqhdHmn5FaUkhjM4OATPjdQplkEymUJVGx4TNp9hKsiNaK8WquLzOuKcM4Uns2VBJWUwZDAIl0o+BU8gz7piULoHmsV6HOVCLBFAoFalcSmPIDmGh2hGTqn2DshVuwbUVIU34cSXEKRchlZJ3iWHSjekmKELgh6yGbKJJKPxc5nxlORNWZt1lpXap1aIE00CjL8oaCSxkJhIMBHhKKxkJLNgGCg3OSJ673IukkN5z19kIihLKPsIUz5kJRkZawRhuhTLKiFAOELwaQ2hlEaF0ovijBTAdGYa1yIuFxt8ZB4xnDNMBGUhhFTQgU2pIUYliAAU6n1BwkRWLNb-LJUCkKmNwx6EDrLNK3KzycybAYBwUYHKPnEvWYMRhwwnPLtK4OBBQ7h0jgBOVWdgpjC+BAz6DhoHmXsImMM5c1oJnTEZBukQm5bllTs6R7x1qYATGLUqsJDZxntaYlw9ZNqwkxu65mJqfVGMQCArs71ZQjE-ORR1oSISAlVgCTW2gej6E-h4IAA */
       id: "game",
 
       predictableActionArguments: true,
@@ -233,7 +244,7 @@ export namespace GameMachine {
 
       states: {
         Menu: {
-          on: { NEW_GAME: "Dungeon" },
+          on: { NEW_GAME: "CreateDungeon" },
         },
 
         Dungeon: {
@@ -246,6 +257,7 @@ export namespace GameMachine {
                 onDone: { actions: "assignGameState", target: "Deal" },
               },
             },
+
             Deal: {
               invoke: {
                 src: "deal",
@@ -255,9 +267,11 @@ export namespace GameMachine {
                 },
               },
             },
+
             PlayerTurnStart: {
               after: { 0: "PlayerTurn" },
             },
+
             PlayerTurn: {
               on: {
                 FOLD_CARD: {
@@ -268,6 +282,7 @@ export namespace GameMachine {
                 ESCAPE: { cond: "isRoomEscapable", target: "Escape" },
               },
             },
+
             FoldCard: {
               invoke: {
                 src: "foldCard",
@@ -277,12 +292,14 @@ export namespace GameMachine {
                 },
               },
             },
+
             Escape: {
               invoke: {
                 src: "escapeRoom",
                 onDone: { actions: "assignGameState", target: "Deal" },
               },
             },
+
             EndTurn: {
               always: [
                 { cond: "isDungeonComplete", target: "Win" },
@@ -294,19 +311,61 @@ export namespace GameMachine {
                 { target: "PlayerTurn" },
               ],
             },
+
             ClearRoom: {
               invoke: {
                 src: "clearRoom",
                 onDone: { actions: "assignGameState", target: "Deal" },
               },
             },
+
             Win: {
-              on: { NEW_GAME: "Start" },
+              on: { NEW_GAME: "Restart" },
             },
+
             GameOver: {
-              on: { NEW_GAME: "Start" },
+              on: { NEW_GAME: "Restart" },
             },
+
+            Restart: {
+              invoke: {
+                src: "restartDungeon",
+                id: "restartDungeon",
+                onDone: "Start"
+              }
+            }
           },
+        },
+
+        CreateDungeon: {
+          always: [{
+            target: "CreateTutorialDungeon",
+            cond: "isPlayerNew"
+          }, "StandardDungeon"]
+        },
+
+        CreateTutorialDungeon: {
+          invoke: {
+            src: "createTutorialDungeon",
+            id: "createTutorialDungeon",
+            onDone: "StartDungeon"
+          }
+        },
+
+        StandardDungeon: {
+          invoke: {
+            src: "createStandardDungeon",
+            id: "createStandardDungeon",
+            onDone: "StartDungeon"
+          }
+        },
+
+        StartDungeon: {
+          entry: "assignGameState",
+
+          after: {
+            "0": "Dungeon"
+          }
         }
       },
 
@@ -314,12 +373,15 @@ export namespace GameMachine {
     },
     {
       services: {
-        newGame: async (context) => GameLogic.NewGame(context),
+        newGame: async (context) => context,
+        restartDungeon: async (context) => GameLogic.Restart(context),
         deal: async (context) => GameLogic.Deal(context),
         foldCard: async (context, event) =>
           GameLogic.FoldCard(context, event.index),
         escapeRoom: async (context) => GameLogic.EscapeRoom(context),
         clearRoom: async (context) => GameLogic.ClearRoom(context),
+        createTutorialDungeon: async (context) => GameLogic.NewGameWithTutorial(),
+        createStandardDungeon: async (context) => GameLogic.NewGame(),
       },
       actions: {
         assignGameState: assign((_, event) => event.data),
@@ -333,6 +395,7 @@ export namespace GameMachine {
         isRoomEscapable: (context) => GameLogic.IsRoomEscapable(context),
         isCardFoldable: (context, event) =>
           GameLogic.IsCardFoldable(context, event.index),
+        isPlayerNew: (context) => Tutorial.PlayerIsNew(),
       },
     }
   );
@@ -375,7 +438,7 @@ export namespace GameEffects {
     GameMachine.use.subscribe(({ state }) => {
       const { portrait } = useArbitraryStore.getState();
 
-      // Stack cards in the deck when the game starts.
+      // Stack cards in the draw pile when the game starts.
       if (state.matches("Dungeon.Start")) {
         Audio.Stop();
         // Audio.PlaySound("ambience");
@@ -400,11 +463,11 @@ export namespace GameEffects {
         const cards = state.context.room.map(
           (i) => GraphicsEntities.WithCard.entities[i]
         );
-        const deck = state.context.deck.map(
+        const draw = state.context.draw.map(
           (x) => GraphicsEntities.WithCard.entities[x]
         );
         Animation.Deal(cards, portrait);
-        Animation.OrganizeDeck(deck, portrait, state.context.deck.length);
+        Animation.OrganizeDeck(draw, portrait, state.context.draw.length);
       }
 
       // Discard cards when the player folds.
@@ -433,16 +496,16 @@ export namespace GameEffects {
         }
       }
 
-      // Move room cards back to the deck when the player escapes.
+      // Move room cards back to the draw pile when the player escapes.
       if (state.matches("Dungeon.Escape")) {
         const cards = state.context.room
           .map((x) => GraphicsEntities.WithCard.entities[x])
           .filter((x) => x !== undefined);
-        const deck = state.context.deck.map(
+        const draw = state.context.draw.map(
           (x) => GraphicsEntities.WithCard.entities[x]
         );
-        Animation.OrganizeDeck(deck, portrait, state.context.deck.length);
-        Animation.Escape(cards, portrait, state.context.deck.length);
+        Animation.OrganizeDeck(draw, portrait, state.context.draw.length);
+        Animation.Escape(cards, portrait, state.context.draw.length);
       }
 
       if (state.matches("Dungeon.Win") || state.matches("Dungeon.GameOver")) {
