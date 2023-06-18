@@ -236,6 +236,7 @@ export namespace Animation {
     });
   }
 
+  /** Shuffles the remaining room cards back into the draw pile. */
   export function Escape(
     cards: GraphicsEntities.Card[],
     portrait: boolean,
@@ -282,6 +283,7 @@ export namespace Animation {
     return timeline;
   }
 
+  /** Performs an attack animation with a specific card. */
   export function MonsterCardAttack(
     card: GraphicsEntities.Card,
     positionInDiscard: number,
@@ -364,6 +366,7 @@ export namespace Animation {
       .add(() => Discard(card, positionInDiscard, portrait));
   }
 
+  /** Performs a "use item" animation on a specific card. */
   export function ItemCardUse(
     card: GraphicsEntities.Card,
     positionInDiscard: number,
@@ -402,6 +405,7 @@ export namespace Animation {
       .add(() => Discard(card, positionInDiscard, portrait));
   }
 
+  /** Moves a specific card onto the top of the discard pile. */
   export function Discard(
     card: GraphicsEntities.Card,
     positionInDiscard: number,
@@ -444,8 +448,8 @@ export namespace Animation {
   }
 
   /** Move all cards in the deck (draw pile) into their correct position. */
-  export function OrganizeDeck(
-    /** A selector on the ECS containing all cards. */
+  export function OrganizeDrawPile(
+    /** A selector on the ECS containing all cards in the draw pile. */
     cards: GraphicsEntities.Card[],
     /** Whether the screen is in portrait orientation. */
     portrait: boolean,
@@ -472,6 +476,68 @@ export namespace Animation {
           x: deck.rotation.x,
           y: deck.rotation.y,
           z: deck.rotation.z,
+          duration: 0.25,
+        },
+        0
+      );
+      i++;
+    }
+    return timeline
+  }
+
+  /** Move all cards in the discard pile into their correct position. */
+  export function OrganizeDiscardPile(
+    /** A selector on the ECS containing all cards in the discard pile. */
+    cards: GraphicsEntities.Card[],
+    /** Whether the screen is in portrait orientation. */
+    portrait: boolean,
+  ) {
+    const timeline = gsap.timeline();
+    let i = 0;
+    for (const card of cards) {
+      const discard = CardLayouts.InDiscard(card, i, portrait);
+      timeline.to(
+        card.position,
+        {
+          x: discard.position.x,
+          y: discard.position.y,
+          z: discard.position.z,
+          duration: 0.25,
+        },
+        0
+      );
+      timeline.to(
+        card.rotation,
+        {
+          x: discard.rotation.x,
+          y: discard.rotation.y,
+          z: discard.rotation.z,
+          duration: 0.25,
+        },
+        0
+      );
+      i++;
+    }
+    return timeline
+  }
+
+  /** Move all cards in the room into their correct position. */
+  export function OrganizeRoom(
+    /** A selector on the ECS containing all cards in the room. */
+    cards: GraphicsEntities.Card[],
+    /** Whether the screen is in portrait orientation. */
+    portrait: boolean,
+  ) {
+    const timeline = gsap.timeline();
+    let i = 0;
+    for (const card of cards) {
+      const room = portrait ? CardLayouts.RoomGrid(card, i) : CardLayouts.RoomRow(card, i);
+      timeline.to(
+        card.position,
+        {
+          x: room.position.x,
+          y: room.position.y,
+          z: room.position.z,
           duration: 0.25,
         },
         0
@@ -623,27 +689,4 @@ function bend(
   }
   buffer.needsUpdate = true;
   }
-  
-  function createBendTween(
-  mesh: THREE.Mesh,
-  startAngle: number,
-  endAngle: number,
-  duration: number
-) {
-  const state = { angle: startAngle };
-  const geometry = GraphicsEntities.CardGeometry.clone();
-  return gsap.to(state, {
-    angle: endAngle,
-    duration: duration,
-    repeat: -1,
-    yoyo: true,
-    ease: "power1.inOut", // You can choose a different easing function if you like
-    onUpdate: () => {
-      mesh.geometry = geometry.clone();
-      const buffer = mesh.geometry.attributes.position as THREE.BufferAttribute;
-      bend(buffer, state.angle);
-      buffer.needsUpdate = true;
-    }
-  });
-}
 }

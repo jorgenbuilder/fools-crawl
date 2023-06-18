@@ -464,7 +464,7 @@ export namespace GameEffects {
       if (state.matches("Dungeon.Start")) {
         Audio.Stop();
         // Audio.PlaySound("ambience");
-        Animation.OrganizeDeck(
+        Animation.OrganizeDrawPile(
           GraphicsEntities.WithCard.entities,
           portrait,
           GraphicsEntities.WithCard.entities.length
@@ -489,7 +489,7 @@ export namespace GameEffects {
           (x) => GraphicsEntities.WithCard.entities[x]
         );
         Animation.Deal(cards, portrait);
-        Animation.OrganizeDeck(draw, portrait, state.context.draw.length);
+        Animation.OrganizeDrawPile(draw, portrait, state.context.draw.length);
       }
 
       // Discard cards when the player folds.
@@ -526,7 +526,7 @@ export namespace GameEffects {
         const draw = state.context.draw.map(
           (x) => GraphicsEntities.WithCard.entities[x]
         );
-        Animation.OrganizeDeck(draw, portrait, state.context.draw.length);
+        Animation.OrganizeDrawPile(draw, portrait, state.context.draw.length);
         Animation.Escape(cards, portrait, state.context.draw.length);
       }
 
@@ -539,12 +539,45 @@ export namespace GameEffects {
     });
   }
 
+  function SubscribeToScreenSize() {
+    useArbitraryStore.subscribe(({ portrait }, prev) => {
+      const camera = GraphicsEntities.WithCamera.entities[0];
+      if (!camera) return;
+      if (! GameMachine.use.getState().state.matches("Dungeon")) return
+      if (portrait === prev.portrait) return;
+      const cards = GraphicsEntities.WithCard.entities;
+      const { state: { context: {draw, discard, room }} } = GameMachine.use.getState()
+      Animation.OrganizeDrawPile(
+        draw.map((x) => cards[x]),
+        portrait,
+        GraphicsEntities.WithCard.entities.length
+      );
+      Animation.OrganizeDiscardPile(
+        discard.map((x) => cards[x]),
+        portrait,
+      );
+      Animation.OrganizeRoom(
+        room.map((x) => cards[x]),
+        portrait
+      );
+      Animation.MoveCamera(GraphicsEntities.WithCamera.entities[0], {
+        position: GraphicsEntities.DefaultVec3.clone().set(
+          0,
+          0,
+          portrait ? 7 : 4
+        ),
+        rotation: GraphicsEntities.DefaultEuler.clone().set(0, 0, 0),
+      });
+    });
+  }
+
   /** Initializes Graphics entities. */
   function init() {
     if (GraphicsEntities.World.entities.length > 0) return;
     addCards();
     addCamera();
     SubscribeToGameState();
+    SubscribeToScreenSize();
   }
 
   init();
