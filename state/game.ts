@@ -19,7 +19,7 @@
  *
  */
 
-import { createMachine, assign } from "xstate";
+import { createMachine, assign, interpret } from "xstate";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import xstate from "zustand-middleware-xstate";
@@ -97,7 +97,9 @@ export namespace GameLogic {
     state.deck = Tutorial.TutorialDeck();
     state.draw = [...state.deck];
     CardArt.prioritize(state.deck);
-    const tutorialActor = Tutorial.Machine;
+    const tutorialActor = interpret(Tutorial.Machine);
+    tutorialActor.start();
+    tutorialActor.send("INITIALIZE");
     return state;
   }
 
@@ -216,14 +218,23 @@ export namespace GameLogic {
   }
 
   /** Determines whether given card is in the room. */
-  export function IsCardFoldable(state: GameState, foldingCard: number): boolean {
-    return rules.determine({ ...state, foldingCard }, Rules.Determination.canFold);
+  export function IsCardFoldable(
+    state: GameState,
+    foldingCard: number
+  ): boolean {
+    return rules.determine(
+      { ...state, foldingCard },
+      Rules.Determination.canFold
+    );
   }
 }
 
 export namespace GameMachine {
   // Player actions
-  type ActionNewGame = { type: "NEW_GAME", state?: Partial<GameLogic.GameState> };
+  type ActionNewGame = {
+    type: "NEW_GAME";
+    state?: Partial<GameLogic.GameState>;
+  };
   export type ActionFoldCard = { type: "FOLD_CARD"; index: number };
   type ActionEscape = { type: "ESCAPE" };
   type Action = ActionNewGame | ActionFoldCard | ActionEscape;
@@ -337,46 +348,49 @@ export namespace GameMachine {
                 id: "restartDungeon",
                 onDone: {
                   target: "Start",
-                  actions: "assignGameState"
-                }
-              }
-            }
+                  actions: "assignGameState",
+                },
+              },
+            },
           },
         },
 
         CreateDungeon: {
-          always: [{
-            target: "CreateTutorialDungeon",
-            cond: "isPlayerNew"
-          }, "StandardDungeon"]
+          always: [
+            {
+              target: "CreateTutorialDungeon",
+              cond: "isPlayerNew",
+            },
+            "StandardDungeon",
+          ],
         },
 
         CreateTutorialDungeon: {
           invoke: {
             src: "createTutorialDungeon",
             id: "createTutorialDungeon",
-            onDone: "StartDungeon"
-          }
+            onDone: "StartDungeon",
+          },
         },
 
         StandardDungeon: {
           invoke: {
             src: "createStandardDungeon",
             id: "createStandardDungeon",
-            onDone: "StartDungeon"
-          }
+            onDone: "StartDungeon",
+          },
         },
 
         StartDungeon: {
           entry: "assignGameState",
 
           after: {
-            "0": "Dungeon"
-          }
-        }
+            "0": "Dungeon",
+          },
+        },
       },
 
-      initial: "Menu"
+      initial: "Menu",
     },
     {
       services: {
@@ -387,7 +401,8 @@ export namespace GameMachine {
           GameLogic.FoldCard(context, event.index),
         escapeRoom: async (context) => GameLogic.EscapeRoom(context),
         clearRoom: async (context) => GameLogic.ClearRoom(context),
-        createTutorialDungeon: async (context) => GameLogic.NewGameWithTutorial(),
+        createTutorialDungeon: async (context) =>
+          GameLogic.NewGameWithTutorial(),
         createStandardDungeon: async (context) => GameLogic.NewGame(),
       },
       actions: {
