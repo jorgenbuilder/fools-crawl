@@ -98,6 +98,9 @@ export namespace GameLogic {
     state.draw = [...state.deck];
     CardArt.prioritize(state.deck);
     const tutorialActor = interpret(Tutorial.Machine);
+    tutorialActor.onTransition((state) => {
+      console.log("Tutorial transition", state.value)
+    })
     tutorialActor.start();
     tutorialActor.send("INITIALIZE");
     return state;
@@ -384,9 +387,7 @@ export namespace GameMachine {
         StartDungeon: {
           entry: "assignGameState",
 
-          after: {
-            "0": "Dungeon",
-          },
+          always: "Dungeon",
         },
       },
 
@@ -458,6 +459,7 @@ export namespace GameEffects {
   /** Subscribes to the game machine and updates the game world accordingly. */
   function SubscribeToGameState() {
     GameMachine.use.subscribe(({ state }) => {
+      console.log("State", state.value)
       const { portrait } = useArbitraryStore.getState();
 
       // Stack cards in the draw pile when the game starts.

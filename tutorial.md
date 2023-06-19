@@ -37,3 +37,11 @@ UI and triggers?
 Initialization?
     - On new game, if player hasn't done tutorial, init tutorial and create tutorial deck. Pass tutorial deck to dungeon.
         - This gets quirky with the deck based preloader. Feels like that needs to be tidied up a bit.
+
+----
+
+Notes
+
+- Game state being separate from animations makes it silly to time game state events like moving to the next step of a tutorial in concert with animations.
+    - Could make the tutorial wait for game state change and some kind of observer on the animation system.
+- Tutorial steps setup is weirdly rigid. Need a way to add arbitrary commands like yarn spinner? Or, design UI element first and backsolve?
