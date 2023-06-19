@@ -64,7 +64,9 @@ namespace Tutorial {
   }
 
   export function AwaitFold(context: TutorialContext) {
-    const rule = FoldingRules.SpecificCard(TutorialCards[context.steps[0].foldCard]);
+    const rule = FoldingRules.SpecificCard(
+      TutorialCards[context.steps[0].foldCard]
+    );
     rules.registerRule(rule);
     return new Promise<void>((resolve) => {
       const unsubscribe = GameMachine.use.subscribe((state) => {
@@ -79,46 +81,57 @@ namespace Tutorial {
 
   interface TutorialContext {
     steps: {
-      foldCard: number,
-      dialogue: string[],
-      hint: string,
-    }[]
-  };
-
-  const context : TutorialContext = {
-    steps: [{
-      foldCard: 0,
-      dialogue: ["COINS provide a shield to block incoming attacks."],
-      hint: "Choose the 5 of Coins to take the shield."
-    }, {
-      foldCard: 1,
-      dialogue: [
-        "SWORDS and WANDS attack and damage you.",
-        "Your shield will block monsters of decreasing power."
-      ],
-      hint: "Choose the 8 of WANDS to fight."
-      }, {
-      foldCard: 2,
-      dialogue: [
-        "The last blocked monster's power is displayed here.",
-        "A monster that matches or exceeds this number will break your shield."
-      ],
-      hint: "Choose the 5 of SWORDS to fight."
-      }, {
-      foldCard: 3,
-      dialogue: [
-        "CUPS are healing potions. Drinking more than one in a row has no effect."
-      ],
-      hint: "Choose the 3 of CUPS to heal."
-      }]
+      foldCard: number;
+      dialogue: string[];
+      hint: string;
+    }[];
   }
+
+  const context: TutorialContext = {
+    steps: [
+      {
+        foldCard: 0,
+        dialogue: ["COINS provide a shield to block incoming attacks."],
+        hint: "Choose the 5 of Coins to take the shield.",
+      },
+      {
+        foldCard: 1,
+        dialogue: [
+          "SWORDS and WANDS attack and damage you.",
+          "Your shield will block monsters of decreasing power.",
+        ],
+        hint: "Choose the 8 of WANDS to fight.",
+      },
+      {
+        foldCard: 2,
+        dialogue: [
+          "The last blocked monster's power is displayed here.",
+          "A monster that matches or exceeds this number will break your shield.",
+        ],
+        hint: "Choose the 5 of SWORDS to fight.",
+      },
+      {
+        foldCard: 3,
+        dialogue: [
+          "CUPS are healing potions. Drinking more than one in a row has no effect.",
+        ],
+        hint: "Choose the 3 of CUPS to heal.",
+      },
+      // TODO: Escape tutorial.
+    ],
+  };
 
   export const Machine = createMachine(
     {
       /** @xstate-layout N4IgpgJg5mDOIC5QBUCuAXA9gJwJYEMAbAWXwGMALXAOzADoBJa3dAw3ALzAGIJNa6NAG6YA1vXwAHSYQCeaLHiIAlVITgBtAAwBdRKEmZYLXP30gAHogC0AZjoBWABxaA7ABYAnA4CMP1z5Org4ANCCyiA7u9r4ATA6utrHusYHBAL7pYQo4bKSUNPQAggDu+CbUUGjY1Lz89MJiEmUs1dTaekgghsasZl1WCHaOLokpDrGekwBsQaHhiK6e7nQ+tu4Onq7bTklatpnZGLlE+VQCbXUCsOj46PQ5SiTk5w+oNR3mPSb9oIPWTicdDcWgcsx8sWmEN20zCEQQsS0Pi0dHcTgmgVs6O23kOIEeeRehTolz411u9xJxyeZ2JbQ0Pk6BiMP2o5kGsUhdGmsVstmcSMR0w2sIWCKRKLRGN22KWDjxBNORIu72odAAImxMFBUDwyQ1qCJxHQILhYDJ8LJNURtbrPl1vn02QMbDFRl5fP40vN4X5AnR+Xz3NtXLtEQcsvjqYSCiqanQABI0dCwK4Go30U3mwiWpPUFP25m9UzOv6ukZudbxSYzOZwxBrab2Na89HxWyeLQ8hXRpWxt7xgBimEIEDTgkNTTo+Ba6GHo8L3RZTvZ5YFY2rU08s2C9YQPmmWlidCc02cwWS7h87i7PcUMdejAg6m4DAAcgxkAwigAZBgALQAUUXR0S1Xfd-EcG81m2TkHCPVI935FYllcWJ0ScYMm1STJI2oTAIDgcxFWefsvmXMCXSGRtgVcUFwUhaFbFFeFEjoTxr07Nw1kw-ZYjvE5SMfJgTCITgwHI4tfksRAtD3aJ+MjEjaQEUpylYSo2kk1lwImWj9j9aYAl2fYWMQWYUWSQFPA43koncdwBJpZUB1LJcpLc-5fArDxvD8YzdzFDj7BcTYglmMKtE8JyHzpVUNS1HUJIdCjpMGHwHDoVJIW2LQkW8WwIR9Bs8p8LK2yPI8myMxSjnvPtHzaRNk3gFKPPA2xXFWCZcpsw9PE64r90vRx4NDIqYoauKhxHCBtJXKi9MwkzgylfkMrM-c0RWdYUl5BD3ChSahOmtV1XqebKLLIYUW2WYnGvfw8vgyYfD3QJQW5Tk-H2PkAlqqN6pOgRztoS60pKlY1jcaZbJ5OisT3RFtm5TsnA4w9+R646VPoBhn2SosdKoiEUPWNZHqWNakY4k9eV81Dph5JtcPSIA */
-      context,
 
-      /** @xstate-layout N4IgpgJg5mDOIC5QBUCuAXA9gJwJYEMAbAWXwGMALXAOzADoBJa3dAw3ALzAGIJNa6NAG6YA1vXwAHSYQCeaLHiIAlVITgBtAAwBdRKEmZYLXP30gAHogC0AZjoBWABxaA7ABYAnA4CMP1z5Org4ANCCyiA7u9r4ATA6utrHusYHBAL7pYQo4bKSUNPQAggDu+CbUUGjY1Lz89MJiEmUs1dTaekgghsasZl1WCHaOLokpDrGekwBsQaHhiK6e7nQ+tu4Onq7bTklatpnZGLlE+VQCbXUCsOj46PQ5SiTk5w+oNR3mPSb9oIPWTgcjnW01mLnc01cTk80zCEQQPi2MQcKIS8S0W1BhxAjzyL0KdEufGut3uhOOTzOBLaGh8nQMRh+1HMg1ik1Wm3iiVstl8tm8cMQiMSjlRaIcGNcWKyOIpeIKF3e1DoABE2JgoKgeMSGtQROI6BBcLAZPhZGqiBqtZ8ut8+syBjYYqMvL5-Gl5vC-IE6Lyee5tlC9gcZbjTvjFTU6AAJGjoWBXXX6+hGk2EM2x6jxm0M3qmB1-J0jNzreKTGZzQUI2zTexrWK2QHxflaaaxbFh54Kt5RgBimEIEETgj1TTo+Ba6H7g5z3UZ9pZRecJfG5ZhlYWCOmWlidCc02cwWS7h87lbHbl4e7jAg6m4DAAcgxkAwigAZBgALQAorO7fnFwRfxHDPNZtjZCU2R8KteRWJZXFiQEnADWtUkyGVqEwCA4HMTsqVoL55wAx0hjWGIQTBLQIShLYqxFTxT08LQ3DWZD9nbUNLy7V5GGYVgiE4MBCLzX5LEQLQq2iDijkUeUeNKcpWEqNphKZQCJjoNxkiWZJwVmYIq0haZfWmHwUVcZjZl5TwL1kq8eJU20iNE-5fGLDxvD8AIN3hBj7BcTYglmQKMVsk5uOpJVVXVTUhKckSCzEhEgVSWJIQsrREQcWwfHiKsfGYnw6EQiYdx3WtIWk2U7IiyNlUzeNVIXEjbFcDlYm2DEYQxVrPSFY9RTcJxcocMLKQjHtlWnCAmuIwsEA05DdiojxAV5MzYU3U9kN9dwUgbHdklMsa5MiqMVXqWaXJsLQ6G2Zx-CCArPF6-LtmRHxawSFIPRO+yCQugj4rUkiCuM0EIeQgMAi2Twq1iKjbqlXLbCo-TRs4mr8PoBhbzi3MQfm3K4PWNZT38ZY1vhhi9wbDz4NBNKQ0yIA */
+      initial: "Idle",
+      id: "TutorialMachine",
+      schema: {
+        context: {} as TutorialContext,
+      },
+      tsTypes: {} as import("./tutorial.typegen").Typegen0,
+      context,
       states: {
         Initialize: {
           invoke: {
@@ -173,7 +186,6 @@ namespace Tutorial {
                 onDone: {
                   target: "Done",
                   description: `Adds a rule which allows the player to fold a specific card. Observes to Dungeon Machine for the card to be folded, then cleans up the rule and returns.`,
-                  actions: "updateTutorialContext"
                 },
               },
             },
@@ -194,7 +206,7 @@ namespace Tutorial {
             },
             {
               target: "Turn",
-              internal: true
+              internal: true,
             },
           ],
         },
@@ -207,19 +219,12 @@ namespace Tutorial {
           on: {
             INITIALIZE: "Initialize",
           },
-        }
+        },
       },
 
       description: `Controls the flow of the game by altering rules, triggers the display of tutorial UIs, and observes the Dungeon Machine to progress through the tutorial as the player plays through it.
 
 Context provides the steps of the tutorial, which will be iterated by the machine until they have all been completed.`,
-
-      initial: "Idle",
-      id: "TutorialMachine",
-      tsTypes: {} as import("./tutorial.typegen").Typegen0,
-      schema: {
-        context: {} as TutorialContext,
-      }
     },
     {
       services: {
@@ -233,13 +238,10 @@ Context provides the steps of the tutorial, which will be iterated by the machin
         isTutorialComplete: (context) => context.steps.length === 0,
       },
       actions: {
-        updateTutorialContext: () => assign({
-          steps: (context: TutorialContext) => {
-            console.log(`Tutorial step completed: ${context.steps[0]}`)
-            return context.steps.slice(1)
-          },
+        updateTutorialContext: assign({
+          steps: (context) => context.steps.slice(1),
         }),
-      }
+      },
     }
   );
 }
