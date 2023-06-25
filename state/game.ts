@@ -476,7 +476,7 @@ export namespace GameEffects {
           position: GraphicsEntities.DefaultVec3.clone().set(
             0,
             0,
-            portrait ? 7 : 4
+            portrait ? 5.25 : 4
           ),
           rotation: GraphicsEntities.DefaultEuler.clone().set(0, 0, 0),
         });

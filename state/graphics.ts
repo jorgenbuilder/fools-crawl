@@ -99,7 +99,8 @@ export namespace CardLayouts {
         (GraphicsConstants.CARD_SIZE[0] + GraphicsConstants.SPACING) / 2,
       Math.floor(i / GRID_SIZE) *
         (GraphicsConstants.CARD_SIZE[1] + GraphicsConstants.SPACING) -
-        (GraphicsConstants.CARD_SIZE[1] + GraphicsConstants.SPACING) / 2,
+        (GraphicsConstants.CARD_SIZE[1] + GraphicsConstants.SPACING) / 2 -
+        0.25,
       0
     );
     const rotation = GraphicsEntities.DefaultEuler.clone().set(
@@ -137,10 +138,13 @@ export namespace CardLayouts {
     const position = portrait
       ? GraphicsEntities.DefaultVec3.clone().set(
           0,
-          GraphicsConstants.CARD_SIZE[1] +
+          -(
+            GraphicsConstants.CARD_SIZE[1] +
             GraphicsConstants.CARD_SIZE[0] / 2 +
             GraphicsConstants.SPACING +
-            0.5,
+            0.1 +
+            0.25
+          ),
           deckSize * 0.01 - i * 0.01
         )
       : GraphicsEntities.DefaultVec3.clone().set(
@@ -172,12 +176,11 @@ export namespace CardLayouts {
       position: portrait
         ? GraphicsEntities.DefaultVec3.clone().set(
             0,
-            -(
-              GraphicsConstants.CARD_SIZE[1] +
+            GraphicsConstants.CARD_SIZE[1] +
               GraphicsConstants.CARD_SIZE[0] / 2 +
               GraphicsConstants.SPACING +
-              0.5
-            ),
+              0.1 -
+              0.25,
             i * 0.01
           )
         : GraphicsEntities.DefaultVec3.clone().set(-2.8, 0, i * 0.01),

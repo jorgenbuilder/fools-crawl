@@ -4,7 +4,8 @@
   right: 0;
   bottom: 0;
   left: 0;
-  z-index: 100;
+  z-index: 110;
+  padding: 0 10px;
   background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0) 10%);
 }
 
@@ -27,25 +28,29 @@
 }
 
 .continue {
-  position: absolute;
-  bottom: 10px;
-  left: 50%;
-  width: 10px;
-  height: 10px;
-  margin-left: -5px;
-  border-radius: 50%;
-  background-color: white;
+  display: inline-block;
   animation: continue 1s infinite;
+  font-size: 16px;
+  padding-left: 0.25em;
 }
 
 @keyframes continue {
   0% {
     opacity: 0;
+    transform: translateY(2px);
   }
   50% {
     opacity: 1;
+    transform: translateY(4px);
   }
   100% {
     opacity: 0;
+    transform: translateY(0px);
+  }
+}
+
+@media (max-width: 768px) {
+  .dialogue {
+    font-size: 18px;
   }
 }

@@ -6,6 +6,7 @@ type TypewriterProps = {
   onType?: () => void;
   onComplete?: () => void;
   interrupt?: boolean;
+  continueEl?: React.ReactNode;
 };
 
 export default function Typewriter({
@@ -14,6 +15,7 @@ export default function Typewriter({
   onType = () => {},
   onComplete = () => {},
   interrupt = false,
+  continueEl,
 }: TypewriterProps) {
   const [visibleChars, setVisibleChars] = useState(0);
   const typingTimeout = React.useRef<number>();
@@ -46,6 +48,13 @@ export default function Typewriter({
     <div>
       {string.slice(0, visibleChars)}
       <span style={{ visibility: "hidden" }}>{string.slice(visibleChars)}</span>
+      <span
+        style={{
+          visibility: visibleChars === string.length ? "visible" : "hidden",
+        }}
+      >
+        {continueEl}
+      </span>
     </div>
   );
 }

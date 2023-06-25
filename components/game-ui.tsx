@@ -10,7 +10,7 @@ export default function GameUI() {
   } = GameMachine.use();
   const { portrait } = useArbitraryStore();
   return (
-    <Html position={portrait ? [0, 2, 0] : [0, -1.5, 0]} center>
+    <Html position={portrait ? [0, -2.25, 0] : [0, -1.5, 0]} center>
       <div
         style={{
           fontFamily: "monospace",

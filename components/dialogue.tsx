@@ -2,8 +2,9 @@ import { throttle } from "lodash";
 import { useEffect, useState, useCallback } from "react";
 import Dialogue from "../state/dialogue";
 import Typewriter from "./typewriter";
-import styles from "./dialogue.module.css";
 import { Audio } from "../state/audio";
+import { BsFillCaretDownFill } from "react-icons/bs";
+import styles from "./dialogue.module.css";
 
 /** Unlike most components, I decided to render this one outside of the canvas. */
 export default function DialogueUI() {
@@ -47,8 +48,12 @@ export default function DialogueUI() {
             onComplete={() => setComplete(true)}
             onType={throttle(() => Audio.PlaySound("tap"), 75)}
             delay={10}
+            continueEl={
+              <span className={styles.continue}>
+                <BsFillCaretDownFill />
+              </span>
+            }
           />
-          {complete && <div className={styles.continue} />}
         </dialog>
       </div>
     )
