@@ -27,7 +27,7 @@ gsap
   .timeline({ repeat: -1, repeatDelay: 1 })
   .add(Animation.Deal([card], false))
   .add("escape", 2)
-  .add(Animation.Escape([card], false, 1), "escape")
+  .add(Animation.Escape([card], false, 1), "escape");
 
 function Scene() {
   const ref = useRef<THREE.Group>();

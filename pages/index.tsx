@@ -5,9 +5,16 @@ import React from "react";
 import { Canvas } from "@react-three/fiber";
 import Scene from "../components/scene";
 import DialogueUI from "../components/dialogue";
-// import { FPS } from '../components/fps';
+import GameUI from "../components/game-ui";
+import { GameMachine } from "../state/game";
 
 function Game() {
+  const {
+    state: {
+      context: { health, shield, lastMonsterBlocked },
+      matches,
+    },
+  } = GameMachine.use();
   return (
     <>
       <Head>
@@ -22,6 +29,7 @@ function Game() {
           {/* <FPS /> */}
           <Scene />
         </Canvas>
+        {matches("Dungeon") && <GameUI />}
         <DialogueUI />
       </div>
     </>

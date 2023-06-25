@@ -49,7 +49,6 @@ const Scene = () => {
       {matches("Menu") && <Title />}
       {matches("Dungeon") && (
         <>
-          {!matches("Dungeon.Win") && <GameUI />}
           {![matches("Dungeon.Win"), matches("Dungeon.GameOver")].includes(
             true
           ) && <Escape />}

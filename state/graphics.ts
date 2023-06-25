@@ -142,7 +142,7 @@ export namespace CardLayouts {
             GraphicsConstants.CARD_SIZE[1] +
             GraphicsConstants.CARD_SIZE[0] / 2 +
             GraphicsConstants.SPACING +
-            0.1 +
+            0.162 +
             0.25
           ),
           deckSize * 0.01 - i * 0.01

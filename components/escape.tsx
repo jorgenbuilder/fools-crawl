@@ -9,7 +9,7 @@ export default function Escape() {
   const { portrait } = useArbitraryStore();
 
   return (
-    <group position={portrait ? [0, -2.2, 0] : [0, -1.125, 1]}>
+    <group position={portrait ? [0, -2.35, 0] : [0, -1.125, 1]}>
       <mesh
         position={[0, 0.25, 0]}
         scale={0.125}

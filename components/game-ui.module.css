@@ -1,0 +1,44 @@
+.gameUI {
+}
+
+.health,
+.shield {
+  position: absolute;
+  bottom: 0;
+  margin: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.health {
+}
+
+.shield {
+}
+
+.icon {
+  position: relative;
+  font-size: 62px;
+}
+
+.health .icon {
+  color: #e24747;
+}
+
+.shield .icon {
+  color: #5b63f3;
+}
+
+.value {
+  position: absolute;
+  font-size: 24px;
+}
+
+.portrait .health {
+  left: 0;
+}
+
+.portrait .shield {
+  right: 0;
+}

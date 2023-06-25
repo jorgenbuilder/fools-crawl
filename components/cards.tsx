@@ -13,7 +13,7 @@ export default function Cards() {
 
   useFrame(({ clock: { elapsedTime } }) => {
     if (state.matches("Menu")) {
-      Animation.DancingCards(elapsedTime, GraphicsEntities.WithCard, portrait);
+      // Animation.DancingCards(elapsedTime, GraphicsEntities.WithCard, portrait);
     }
   });
 
