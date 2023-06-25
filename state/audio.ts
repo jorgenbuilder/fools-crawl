@@ -45,6 +45,7 @@ export namespace Audio {
     block: new Array(1)
       .fill(0)
       .map((_, i) => `/audio/recorded/block${i + 1}.wav`),
+    tap: new Array(10).fill(0).map((_, i) => `/audio/recorded/tap${i + 1}.wav`),
   };
 
   export type Sounds = keyof typeof SoundConf;

@@ -4,6 +4,9 @@ import { rules } from "./rules";
 import { FoldingRules } from "./rules/FoldingRules";
 import EscapeRules from "./rules/EscapeRules";
 import { GameMachine } from "./game";
+import { Animation } from "./graphics";
+import { EventSystem } from "./events";
+import Dialogue from "./dialogue";
 
 namespace Tutorial {
   // The 5 of coins, 8 of wands, 5 of swords, and 3 of cups.
@@ -42,7 +45,8 @@ namespace Tutorial {
     return;
   }
 
-  export async function AwaitTurn(context: TutorialContext) {
+  /** Return once the game state has reached the player's turn. */
+  async function AwaitTurn() {
     return new Promise<void>((resolve) => {
       const unsubscribe = GameMachine.use.subscribe((state) => {
         if (state.state.matches("Dungeon.PlayerTurn")) {
@@ -53,17 +57,48 @@ namespace Tutorial {
     });
   }
 
+  /** Return once the the deal animation has been completed. */
+  async function AwaitDeal() {
+    return new Promise<void>((resolve) => {
+      const unsubscribe = Animation.Events.System.subscribe(
+        Animation.Events.Keys.DealComplete,
+        () => {
+          unsubscribe();
+          resolve();
+        }
+      );
+    });
+  }
+
   export async function DisplayDialogue(context: TutorialContext) {
-    for (const line of context.steps[0].dialogue) {
-      alert(line);
-    }
+    Dialogue.Events.System.emit(
+      Dialogue.Events.Keys.DisplayDialogue,
+      context.steps[0].dialogue
+    );
   }
 
   export async function DisplayHints(context: TutorialContext) {
-    alert(context.steps[0].hint);
+    Dialogue.Events.System.emit(
+      Dialogue.Events.Keys.DisplayDialogue,
+      context.steps[0].hint.text
+    );
   }
 
-  export function AwaitFold(context: TutorialContext) {
+  /** Return once a discard animation completes. */
+  async function AwaitDiscard() {
+    return new Promise<void>((resolve) => {
+      const unsubscribe = Animation.Events.System.subscribe(
+        Animation.Events.Keys.DiscardComplete,
+        () => {
+          unsubscribe();
+          resolve();
+        }
+      );
+    });
+  }
+
+  /** Return once the player has activated a specific card. */
+  function AwaitFold(context: TutorialContext) {
     const rule = FoldingRules.SpecificCard(
       TutorialCards[context.steps[0].foldCard]
     );
@@ -83,7 +118,11 @@ namespace Tutorial {
     steps: {
       foldCard: number;
       dialogue: string[];
-      hint: string;
+      hint: {
+        text: string;
+        coordinates: { x: number; y: number };
+        direction: "up" | "down" | "left" | "right";
+      };
     }[];
   }
 
@@ -92,7 +131,11 @@ namespace Tutorial {
       {
         foldCard: 0,
         dialogue: ["COINS provide a shield to block incoming attacks."],
-        hint: "Choose the 5 of Coins to take the shield.",
+        hint: {
+          text: "Choose the 5 of Coins to take the shield.",
+          coordinates: { x: 0, y: 0 },
+          direction: "down",
+        },
       },
       {
         foldCard: 1,
@@ -100,22 +143,34 @@ namespace Tutorial {
           "SWORDS and WANDS attack and damage you.",
           "Your shield will block monsters of decreasing power.",
         ],
-        hint: "Choose the 8 of WANDS to fight.",
+        hint: {
+          text: "Choose the 8 of WANDS to fight.",
+          coordinates: { x: 0, y: 0 },
+          direction: "down",
+        },
       },
       {
         foldCard: 2,
         dialogue: [
-          "The last blocked monster's power is displayed here.",
+          "The last blocked monster's power is displayed next to your 🛡️ shield value.",
           "A monster that matches or exceeds this number will break your shield.",
         ],
-        hint: "Choose the 5 of SWORDS to fight.",
+        hint: {
+          text: "Choose the 5 of SWORDS to fight.",
+          coordinates: { x: 0, y: 0 },
+          direction: "down",
+        },
       },
       {
         foldCard: 3,
         dialogue: [
           "CUPS are healing potions. Drinking more than one in a row has no effect.",
         ],
-        hint: "Choose the 3 of CUPS to heal.",
+        hint: {
+          text: "Choose the 3 of CUPS to heal.",
+          coordinates: { x: 0, y: 0 },
+          direction: "down",
+        },
       },
       // TODO: Escape tutorial.
     ],
@@ -213,6 +268,10 @@ namespace Tutorial {
 
         Done: {
           type: "final",
+          invoke: {
+            src: "endTutorial",
+            id: "endTutorial",
+          },
         },
 
         Idle: {
@@ -229,10 +288,12 @@ Context provides the steps of the tutorial, which will be iterated by the machin
     {
       services: {
         applyTutorialRules: ApplyTutorialRules,
-        awaitTurn: AwaitTurn,
+        awaitTurn: () => Promise.all([AwaitTurn(), AwaitDeal()]),
         displayDialogue: DisplayDialogue,
         displayHints: DisplayHints,
-        awaitFold: AwaitFold,
+        awaitFold: (context) =>
+          Promise.all([AwaitFold(context), AwaitDiscard()]),
+        endTutorial: RemoveTutorialRules,
       },
       guards: {
         isTutorialComplete: (context) => context.steps.length === 0,

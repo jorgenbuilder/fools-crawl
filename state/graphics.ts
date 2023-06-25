@@ -5,6 +5,7 @@ import { ArchetypeBucket, World as ECS } from "miniplex";
 import { Audio } from "./audio";
 import { TarotDeck } from "./TarotDeck";
 import { GameConstants, GameMachine } from "./game";
+import { EventSystem } from "./events";
 
 gsap.registerPlugin(CustomEase);
 
@@ -268,7 +269,7 @@ export namespace Animation {
           duration: 0.125,
         },
         "start"
-    )
+      )
       .call(() => Audio.PlaySound("slide"))
       .add("deck")
       .to(
@@ -279,7 +280,7 @@ export namespace Animation {
           z: 0,
         },
         "deck"
-    );
+      );
     return timeline;
   }
 
@@ -444,7 +445,9 @@ export namespace Animation {
           duration: 0.125,
         },
         "discard"
-      );
+      )
+      .add("done")
+      .call(() => Events.System.emit(Events.Keys.DiscardComplete, undefined));
   }
 
   /** Move all cards in the deck (draw pile) into their correct position. */
@@ -482,7 +485,7 @@ export namespace Animation {
       );
       i++;
     }
-    return timeline
+    return timeline;
   }
 
   /** Move all cards in the discard pile into their correct position. */
@@ -490,7 +493,7 @@ export namespace Animation {
     /** A selector on the ECS containing all cards in the discard pile. */
     cards: GraphicsEntities.Card[],
     /** Whether the screen is in portrait orientation. */
-    portrait: boolean,
+    portrait: boolean
   ) {
     const timeline = gsap.timeline();
     let i = 0;
@@ -518,7 +521,7 @@ export namespace Animation {
       );
       i++;
     }
-    return timeline
+    return timeline;
   }
 
   /** Move all cards in the room into their correct position. */
@@ -526,12 +529,14 @@ export namespace Animation {
     /** A selector on the ECS containing all cards in the room. */
     cards: GraphicsEntities.Card[],
     /** Whether the screen is in portrait orientation. */
-    portrait: boolean,
+    portrait: boolean
   ) {
     const timeline = gsap.timeline();
     let i = 0;
     for (const card of cards) {
-      const room = portrait ? CardLayouts.RoomGrid(card, i) : CardLayouts.RoomRow(card, i);
+      const room = portrait
+        ? CardLayouts.RoomGrid(card, i)
+        : CardLayouts.RoomRow(card, i);
       timeline.to(
         card.position,
         {
@@ -544,7 +549,7 @@ export namespace Animation {
       );
       i++;
     }
-    return timeline
+    return timeline;
   }
 
   /** Makes all of the cards in the deck dance. */
@@ -603,7 +608,10 @@ export namespace Animation {
   /** Deal cards. */
   export function Deal(cards: GraphicsEntities.Card[], portrait: boolean) {
     const timeline = gsap.timeline().delay(0.25);
+    // Index for the animation.
     let i = 0;
+    // Index for the event emission.
+    let i2 = 0;
     const state = { angle: 0 };
     const geometry = GraphicsEntities.CardGeometry.clone();
     for (const card of cards) {
@@ -612,20 +620,29 @@ export namespace Animation {
         : CardLayouts.RoomRow(card, i);
       timeline
         .add("lift")
-        .to(card.position, {
-          z: card.position.z + 1,
-          duration: 0.125,
-        }, "lift")
-        .to(state, {
-          angle: 5,
-          duration: 0.125,
-          onUpdate: () => {
-            card.geometry = geometry.clone();
-            const buffer = card.geometry.attributes.position as THREE.BufferAttribute;
-            bend(buffer, state.angle, "right");
-            buffer.needsUpdate = true;
-          }
-        }, "lift")
+        .to(
+          card.position,
+          {
+            z: card.position.z + 1,
+            duration: 0.125,
+          },
+          "lift"
+        )
+        .to(
+          state,
+          {
+            angle: 5,
+            duration: 0.125,
+            onUpdate: () => {
+              card.geometry = geometry.clone();
+              const buffer = card.geometry.attributes
+                .position as THREE.BufferAttribute;
+              bend(buffer, state.angle, "right");
+              buffer.needsUpdate = true;
+            },
+          },
+          "lift"
+        )
         .call(() => Audio.PlaySound("pick"))
         .add("deal")
         .to(
@@ -647,46 +664,72 @@ export namespace Animation {
             duration: 0.125,
           },
           "deal"
-      )
-      .to(state, {
-        angle: 0,
-        duration: 0.25,
-        onUpdate: () => {
-          card.geometry = geometry.clone();
-          const buffer = card.geometry.attributes.position as THREE.BufferAttribute;
-          bend(buffer, state.angle, "right");
-          buffer.needsUpdate = true;
-        }
-      }, "deal")
-        .call(() => Audio.PlaySound("place"));
+        )
+        .to(
+          state,
+          {
+            angle: 0,
+            duration: 0.25,
+            onUpdate: () => {
+              card.geometry = geometry.clone();
+              const buffer = card.geometry.attributes
+                .position as THREE.BufferAttribute;
+              bend(buffer, state.angle, "right");
+              buffer.needsUpdate = true;
+            },
+          },
+          "deal"
+        )
+        .call(() => Audio.PlaySound("place"))
+        .add("done")
+        .call(() => {
+          if (i2 === cards.length - 1)
+            Events.System.emit(Events.Keys.DealComplete, undefined);
+          i2++;
+        });
       i++;
     }
     return timeline;
   }
 
-function bend(
-  buffer: THREE.BufferAttribute,
-  angle: number,
-  side: "both" | "left" | "right" = "right"
-) {
-  if (angle === 0) return;
-  const array = buffer.array as number[];
-  for (let i = 0; i < array.length; i += 3) {
-    const x = array[i];
-    const y = array[i + 1];
-    const z = array[i + 2];
-    if (side === "right") {
-      if (x < 0) continue;
-    } else if (side === "left") {
-      if (x > 0) continue;
+  function bend(
+    buffer: THREE.BufferAttribute,
+    angle: number,
+    side: "both" | "left" | "right" = "right"
+  ) {
+    if (angle === 0) return;
+    const array = buffer.array as number[];
+    for (let i = 0; i < array.length; i += 3) {
+      const x = array[i];
+      const y = array[i + 1];
+      const z = array[i + 2];
+      if (side === "right") {
+        if (x < 0) continue;
+      } else if (side === "left") {
+        if (x > 0) continue;
+      }
+      const theta = x * angle;
+      let sinTheta = Math.sin(theta);
+      let cosTheta = Math.cos(theta);
+      array[i] = -(z - 1.0 / angle) * sinTheta;
+      array[i + 1] = y;
+      array[i + 2] = (z - 1.0 / angle) * cosTheta + 1.0 / angle;
     }
-    const theta = x * angle;
-    let sinTheta = Math.sin(theta);
-    let cosTheta = Math.cos(theta);
-    array[i] = -(z - 1.0 / angle) * sinTheta;
-    array[i + 1] = y;
-    array[i + 2] = (z - 1.0 / angle) * cosTheta + 1.0 / angle;
+    buffer.needsUpdate = true;
   }
-  buffer.needsUpdate = true;
+
+  /** Allows subscription to animation system events. */
+  export namespace Events {
+    export enum Keys {
+      DealComplete = "DealComplete",
+      DiscardComplete = "DiscardComplete",
+    }
+
+    export type AnimationEventMap = {
+      [Keys.DealComplete]: void;
+      [Keys.DiscardComplete]: void;
+    };
+
+    export const System = new EventSystem<AnimationEventMap>();
   }
 }

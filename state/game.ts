@@ -99,8 +99,8 @@ export namespace GameLogic {
     CardArt.prioritize(state.deck);
     const tutorialActor = interpret(Tutorial.Machine);
     tutorialActor.onTransition((state) => {
-      console.log("Tutorial transition", state.value)
-    })
+      console.log("Tutorial transition", state.value);
+    });
     tutorialActor.start();
     tutorialActor.send("INITIALIZE");
     return state;
@@ -459,7 +459,7 @@ export namespace GameEffects {
   /** Subscribes to the game machine and updates the game world accordingly. */
   function SubscribeToGameState() {
     GameMachine.use.subscribe(({ state }) => {
-      console.log("State", state.value)
+      console.log("State", state.value);
       const { portrait } = useArbitraryStore.getState();
 
       // Stack cards in the draw pile when the game starts.
@@ -542,13 +542,17 @@ export namespace GameEffects {
   }
 
   function SubscribeToScreenSize() {
-    useArbitraryStore.subscribe(({ portrait }, prev) => {
+    return useArbitraryStore.subscribe(({ portrait }, prev) => {
       const camera = GraphicsEntities.WithCamera.entities[0];
       if (!camera) return;
-      if (! GameMachine.use.getState().state.matches("Dungeon")) return
+      if (!GameMachine.use.getState().state.matches("Dungeon")) return;
       if (portrait === prev.portrait) return;
       const cards = GraphicsEntities.WithCard.entities;
-      const { state: { context: {draw, discard, room }} } = GameMachine.use.getState()
+      const {
+        state: {
+          context: { draw, discard, room },
+        },
+      } = GameMachine.use.getState();
       Animation.OrganizeDrawPile(
         draw.map((x) => cards[x]),
         portrait,
@@ -556,7 +560,7 @@ export namespace GameEffects {
       );
       Animation.OrganizeDiscardPile(
         discard.map((x) => cards[x]),
-        portrait,
+        portrait
       );
       Animation.OrganizeRoom(
         room.map((x) => cards[x]),

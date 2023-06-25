@@ -28,6 +28,11 @@ export interface Typegen0 {
       data: unknown;
       __tip: "See the XState TS docs to learn how to strongly type this.";
     };
+    "done.invoke.endTutorial": {
+      type: "done.invoke.endTutorial";
+      data: unknown;
+      __tip: "See the XState TS docs to learn how to strongly type this.";
+    };
     "error.platform.applyTutorialRules": {
       type: "error.platform.applyTutorialRules";
       data: unknown;
@@ -48,6 +53,10 @@ export interface Typegen0 {
       type: "error.platform.displayHints";
       data: unknown;
     };
+    "error.platform.endTutorial": {
+      type: "error.platform.endTutorial";
+      data: unknown;
+    };
     "xstate.init": { type: "xstate.init" };
   };
   invokeSrcNameMap: {
@@ -56,6 +65,7 @@ export interface Typegen0 {
     awaitTurn: "done.invoke.awaitTurn";
     displayDialogue: "done.invoke.displayDialogue";
     displayHints: "done.invoke.displayHints";
+    endTutorial: "done.invoke.endTutorial";
   };
   missingImplementations: {
     actions: never;
@@ -78,6 +88,7 @@ export interface Typegen0 {
       | "done.invoke.awaitTurn"
       | "done.state.TutorialMachine.Turn";
     displayHints: "done.invoke.displayDialogue";
+    endTutorial: "done.state.TutorialMachine.Turn";
   };
   matchesStates:
     | "AwaitingTurn"
