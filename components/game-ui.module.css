@@ -12,9 +12,11 @@
 }
 
 .health {
+  left: 0;
 }
 
 .shield {
+  right: 0;
 }
 
 .icon {
