@@ -1,46 +1,35 @@
 .gameUI {
+  width: 100%;
+  position: absolute;
+  bottom: 0px;
+  height: 25%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
 }
 
-.health,
-.shield {
-  position: absolute;
-  bottom: 0;
+.stat {
   margin: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.health {
-  left: 0;
-}
-
-.shield {
-  right: 0;
+  gap: 10px;
 }
 
 .icon {
   position: relative;
-  font-size: 62px;
-}
-
-.health .icon {
-  color: #e24747;
-}
-
-.shield .icon {
-  color: #5b63f3;
 }
 
 .value {
-  position: absolute;
+  width: 2em;
+  font-size: 50px;
+}
+
+.gameUI {
+  font-size: 100px;
+}
+
+.gameUI.portrait {
   font-size: 24px;
-}
-
-.portrait .health {
-  left: 0;
-}
-
-.portrait .shield {
-  right: 0;
 }
