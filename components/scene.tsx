@@ -8,7 +8,6 @@ import Win from "./win";
 import Escape from "./escape";
 import Table from "./table";
 import { useFrame } from "@react-three/fiber";
-import GameUI from "./game-ui";
 
 const Scene = () => {
   const {

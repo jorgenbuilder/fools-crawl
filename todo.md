@@ -19,7 +19,7 @@
     - [x] Breaking a shield
 - [ ] Add keyboard + controller input system
 - [ ] Create a tutorial
-- [ ] Create a dialog system
+- [x] Create a dialog system
 - [ ] Create a system for going dungeon to dungeon with saved progress
 - [x] Play with bendy cards
 - [ ] Add a rewind mechanic (let send the player back a few turns)
@@ -27,3 +27,9 @@
 - [ ] Implement different views like Inscryption
 - [ ] Setup automatic card animations based on pile positions, so you can just add cards to a pile in game state
 - [ ] Cards clip thru table in escape animation
+
+- [ ] Split the tutorial into it's own level and create a new level with different rules and different dialogs
+- [ ] Fix loading suspense between game states
+- [ ] Create a nice game guide book UI
+- [ ] Hire a designer to create game branding assets and backdrops
+- [ ] Replace the damage sound effect

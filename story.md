@@ -25,3 +25,7 @@
 - Would be cool if the game broke the players expectations by removing the standard gameplay loop.
   - The world isn't a dungeon to defeat, it's something else.
   - Getting up from the table as a mechanic, like Inscryption
+
+Simplify mechanics for first couple of levels
+Shields always block for first level
+Player can escape more often (set number of escapes, cooldown)
